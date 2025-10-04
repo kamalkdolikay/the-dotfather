@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Z Boundary with Aligned Rectangle + Circle</title>
+<title>Morse </title>
 <style>
   :root { --stroke: 2; --period: 60; } /* seconds per rotation */
   html,body { height:100%; margin:0; background:#fff; }
@@ -28,6 +28,22 @@
 
   text { font-family:sans-serif; font-size:5px; }
   .text-white { fill:#fff; }
+
+   /* Hint text, subtle in bottom-right */
+  .hint {
+    position: absolute;
+    bottom: 12px;
+    right: 16px;
+    font-family: sans-serif;
+    font-size: 13px;
+    color: #777;
+    background: rgba(255,255,255,0.6);
+    padding: 4px 8px;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    user-select: none;
+    pointer-events: none;
+  }
 </style>
 </head>
 <body>
@@ -61,9 +77,14 @@
   <text x="85" y="15" fill="#000">DUEL</text>
 </svg>
 
+
+<div class="hint">
+  Press <strong>(Spacebar)</strong>: tap for DOT ·, hold for DASH –
+</div>
+
 <script>
   const circle = document.getElementById('circle');
-  const rect = document.getElementById('rect');
+  const rect   = document.getElementById('rect');
 
   const d = 10; // offset from center along diagonal
 
@@ -76,9 +97,6 @@
   const rx = 50 - d, ry = 50 + d;
   rect.setAttribute('x', rx - rw/2);
   rect.setAttribute('y', ry - rh/2);
-
-  // IMPORTANT: no rotation needed — it's drawn "long side vertical"
-  // so it matches the middle edge's orientation
 
   // Rotation animation
   const rotor = document.getElementById('rotor');
@@ -95,33 +113,66 @@
     })(t0);
   }
 
-// Morse-style input
+  // Shared press timer
   let pressStart = null;
 
+  // Keyboard (space)
   window.addEventListener("keydown", e => {
     if (e.code === "Space" && pressStart === null) {
       pressStart = Date.now();
       e.preventDefault();
     }
   });
-
   window.addEventListener("keyup", e => {
     if (e.code === "Space" && pressStart !== null) {
       const duration = Date.now() - pressStart;
       pressStart = null;
-
-      if (duration < 150) {
-        // dot
-        circle.classList.add("flash");
-        setTimeout(()=>circle.classList.remove("flash"), 500);
-      } else {
-        // dash
-        rect.classList.add("flash");
-        setTimeout(()=>rect.classList.remove("flash"), 500);
-      }
+      handleSignal(duration);
       e.preventDefault();
     }
   });
+
+  // Touch (mobile tap/hold)
+  window.addEventListener("touchstart", e => {
+    if (pressStart === null) {
+      pressStart = Date.now();
+    }
+  });
+  window.addEventListener("touchend", e => {
+    if (pressStart !== null) {
+      const duration = Date.now() - pressStart;
+      pressStart = null;
+      handleSignal(duration);
+    }
+  });
+
+  // Mouse (left click/hold)
+  window.addEventListener("mousedown", e => {
+    if (e.button === 0 && pressStart === null) { // left button
+      pressStart = Date.now();
+    }
+  });
+  window.addEventListener("mouseup", e => {
+    if (e.button === 0 && pressStart !== null) {
+      const duration = Date.now() - pressStart;
+      pressStart = null;
+      handleSignal(duration);
+    }
+  });
+
+  // Unified signal handler
+  function handleSignal(duration) {
+    if (duration < 250) {
+      // dot
+      circle.classList.add("flash");
+      setTimeout(()=>circle.classList.remove("flash"), 500);
+    } else {
+      // dash
+      rect.classList.add("flash");
+      setTimeout(()=>rect.classList.remove("flash"), 500);
+    }
+  }
 </script>
+
 </body>
 </html>

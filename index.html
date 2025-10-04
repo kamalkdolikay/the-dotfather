@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Compact Z Boundary (short vertical)</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Z Boundary with Aligned Rectangle + Circle</title>
 <style>
-  :root { --stroke: 3; --period: 60; } /* seconds per rotation */
+  :root { --stroke: 2; --period: 60; } /* seconds per rotation */
   html,body { height:100%; margin:0; background:#fff; }
   svg { width:100vw; height:100vh; display:block; }
   .boundary {
@@ -13,45 +13,78 @@
     stroke:#000;
     stroke-width:var(--stroke);
     vector-effect:non-scaling-stroke;
-    stroke-linejoin:miter;
-    stroke-linecap:butt;
   }
+  .filled { fill:#000; stroke:none; }
+  .circle { fill:#fff; }
+  .rect { fill:#000; }
+  text { font-family:sans-serif; font-size:5px; }
+  .text-white { fill:#fff; }
 </style>
 </head>
 <body>
-  <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">
-    <defs>
-      <clipPath id="clip" clipPathUnits="userSpaceOnUse">
-        <rect x="0" y="0" width="100" height="100" />
-      </clipPath>
-    </defs>
+<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <clipPath id="clip" clipPathUnits="userSpaceOnUse">
+      <rect x="0" y="0" width="100" height="100"/>
+    </clipPath>
+  </defs>
 
-    <g id="rotor" clip-path="url(#clip)">
-      <!-- Z-shaped boundary centered on the rotation origin (50,50).
-           End segments use a very large half-length so the rotated line
-           always reaches the viewport corners. Adjust L if needed. -->
-      <g transform="translate(50 50)">
-        <!-- points: (-L, -10)  (0, 8)  (0, -8)  (L, 10) -->
-        <polyline class="boundary"
-          points="-1000,-10 0,8 0,-8 1000,10" />
-      </g>
-    </g>
-  </svg>
+  <!-- Rotating group -->
+  <g id="rotor" clip-path="url(#clip)">
+    <!-- Black filled side -->
+    <polygon class="filled"
+      points="-1000000,40  50,40  50,60  1000000,60
+              1000000,0    -1000000,0" />
 
-  <script>
-    const rotor = document.getElementById('rotor');
-    const hash = new URLSearchParams(location.hash.slice(1));
-    const periodSec = Number(hash.get('period')) || 60; // default 60s
-    const period = periodSec * 1000;
+    <!-- Boundary line -->
+    <polyline class="boundary"
+      points="-1000000,40  50,40  50,60  1000000,60" />
 
-    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      let t0 = performance.now();
-      (function animate(now){
-        const t = ((now - t0) % period) / period;
-        rotor.setAttribute('transform', `rotate(${t * 360} 50 50)`);
-        requestAnimationFrame(animate);
-      })(t0);
-    }
-  </script>
+    <!-- White circle (on diagonal axis, upper-right) -->
+    <circle id="circle" class="circle" r="4"/>
+
+    <!-- Black rectangle (on diagonal axis, lower-left, long side parallel to vertical edge) -->
+    <rect id="rect" class="rect" width="4" height="14"/>
+  </g>
+
+  <!-- Static text -->
+  <text x="5" y="95" class="text-white">LEARN</text>
+  <text x="85" y="15" fill="#000">DUEL</text>
+</svg>
+
+<script>
+  const circle = document.getElementById('circle');
+  const rect = document.getElementById('rect');
+
+  const d = 10; // offset from center along diagonal
+
+  // Circle on axis: top-right
+  circle.setAttribute('cx', 50 + d);
+  circle.setAttribute('cy', 59 - d);
+
+  // Rectangle on axis: bottom-left
+  const rw = 5, rh = 32; // vertical long side
+  const rx = 50 - d, ry = 50 + d;
+  rect.setAttribute('x', rx - rw/2);
+  rect.setAttribute('y', ry - rh/2);
+
+  // IMPORTANT: no rotation needed — it's drawn "long side vertical"
+  // so it matches the middle edge's orientation
+
+  // Rotation animation
+  const rotor = document.getElementById('rotor');
+  const hash = new URLSearchParams(location.hash.slice(1));
+  const periodSec = Number(hash.get('period')) || 60;
+  const period = periodSec * 1000;
+
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    let t0 = performance.now();
+    (function animate(now){
+      const t = ((now - t0) % period) / period;
+      rotor.setAttribute('transform', `rotate(${t * 360} 50 50)`);
+      requestAnimationFrame(animate);
+    })(t0);
+  }
+</script>
 </body>
 </html>

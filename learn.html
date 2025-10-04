@@ -5,15 +5,69 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Learn</title>
 <style>
-  html,body{height:100%;margin:0;background:#111;color:#fafafa;font-family:sans-serif;display:grid;place-items:center}
-  a{color:#8ec5ff;text-decoration:none;border:1px solid #8ec5ff;padding:.5rem .75rem;border-radius:6px}
+  html,body{height:100%;margin:0;background:#fff}
+  svg{width:100vw;height:100vh;display:block}
+  .rect{fill:#000; transition: fill 0.2s;}
+  /* Flash effect */
+  .rect.flash { fill:#666 !important; }
 </style>
 </head>
 <body>
-  <main style="text-align:center">
-    <h1>LEARN</h1>
-    <p>You held press (dash) — welcome to <strong>learn.html</strong>.</p>
-    <p><a href="index.html">Back</a></p>
-  </main>
+<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+  <!-- big centered rectangle -->
+  <rect id="learnRect" class="rect" x="20" y="40" width="60" height="20"/>
+</svg>
+
+<script>
+  let pressStart=null; 
+  const THRESHOLD=250;  // >= dash
+  const FLASH_MS=500;   // flash time
+  const back=()=>location.href="index.html";
+
+  const rect=document.getElementById('learnRect');
+
+  function handleSignal(duration){
+    if(duration>=THRESHOLD){
+      // dash: flash then return
+      rect.classList.add('flash');
+      setTimeout(()=>back(), FLASH_MS);
+    }
+  }
+
+  // Keyboard
+  window.addEventListener("keydown",e=>{
+    if(e.code==="Space"&&pressStart===null){
+      pressStart=Date.now();e.preventDefault();
+    }
+  });
+  window.addEventListener("keyup",e=>{
+    if(e.code==="Space"&&pressStart!==null){
+      handleSignal(Date.now()-pressStart);
+      pressStart=null;e.preventDefault();
+    }
+  });
+
+  // Mouse
+  window.addEventListener("mousedown",e=>{
+    if(e.button===0&&pressStart===null) pressStart=Date.now();
+  });
+  window.addEventListener("mouseup",e=>{
+    if(e.button===0&&pressStart!==null){
+      handleSignal(Date.now()-pressStart);
+      pressStart=null;
+    }
+  });
+
+  // Touch
+  window.addEventListener("touchstart",()=>{
+    if(pressStart===null) pressStart=Date.now();
+  },{passive:true});
+  window.addEventListener("touchend",()=>{
+    if(pressStart!==null){
+      handleSignal(Date.now()-pressStart);
+      pressStart=null;
+    }
+  });
+</script>
 </body>
 </html>

@@ -5,15 +5,81 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Duel</title>
 <style>
-  html,body{height:100%;margin:0;background:#fff;color:#111;font-family:sans-serif;display:grid;place-items:center}
-  a{color:#0050cc;text-decoration:none;border:1px solid #0050cc;padding:.5rem .75rem;border-radius:6px}
+  html,body {
+    height:100%; margin:0;
+    background:#000;                /* black background */
+  }
+  svg { width:100vw; height:100vh; display:block; }
+  .circle { fill:#fff; transition: fill 0.15s; }  /* white circle */
+  .circle.flash { fill:#888 !important; }         /* grey flash */
 </style>
 </head>
 <body>
-  <main style="text-align:center">
-    <h1>DUEL</h1>
-    <p>You tapped (dot) — welcome to <strong>duel.html</strong>.</p>
-    <p><a href="index.html">Back</a></p>
-  </main>
+<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+  <!-- centered circle -->
+  <circle id="dotCircle" class="circle" cx="50" cy="50" r="20"/>
+</svg>
+
+<script>
+  let pressStart = null;
+  let navigating = false;               // prevent double redirects
+  const THRESHOLD = 250;                // < 250ms = dot
+  const FLASH_MS  = 500;
+  const back = () => location.href = "index.html";
+
+  const circle = document.getElementById('dotCircle');
+
+  function handleSignal(duration){
+    if (navigating) return;
+    if (duration < THRESHOLD) {
+      // DOT: flash then redirect
+      navigating = true;
+      circle.classList.add('flash');
+      setTimeout(()=> back(), FLASH_MS);
+    } else {
+      // DASH: do nothing here
+    }
+  }
+
+  // Keyboard (Space)
+  window.addEventListener("keydown", e => {
+    if (e.code === "Space" && pressStart === null) {
+      pressStart = Date.now();
+      e.preventDefault();
+    }
+  });
+  window.addEventListener("keyup", e => {
+    if (e.code === "Space" && pressStart !== null) {
+      const duration = Date.now() - pressStart;
+      pressStart = null;
+      handleSignal(duration);
+      e.preventDefault();
+    }
+  });
+
+  // Mouse (left click/hold)
+  window.addEventListener("mousedown", e => {
+    if (e.button === 0 && pressStart === null) pressStart = Date.now();
+  });
+  window.addEventListener("mouseup", e => {
+    if (e.button === 0 && pressStart !== null) {
+      const duration = Date.now() - pressStart;
+      pressStart = null;
+      handleSignal(duration);
+    }
+  });
+
+  // Touch (tap/hold)
+  window.addEventListener("touchstart", () => {
+    if (pressStart === null) pressStart = Date.now();
+  }, { passive: true });
+  window.addEventListener("touchend", () => {
+    if (pressStart !== null) {
+      const duration = Date.now() - pressStart;
+      pressStart = null;
+      handleSignal(duration);
+    }
+  });
+</script>
 </body>
 </html>

@@ -36,12 +36,12 @@
 
   // Keyboard
   window.addEventListener("keydown",e=>{
-    if(e.code==="Space"&&pressStart===null){
+    if(e.code==="Enter"&&pressStart===null){
       pressStart=Date.now();e.preventDefault();
     }
   });
   window.addEventListener("keyup",e=>{
-    if(e.code==="Space"&&pressStart!==null){
+    if(e.code==="Enter"&&pressStart!==null){
       handleSignal(Date.now()-pressStart);
       pressStart=null;e.preventDefault();
     }

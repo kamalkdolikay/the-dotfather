@@ -68,18 +68,18 @@
   <g id="rotor">
     <!-- Black filled side -->
     <polygon class="filled"
-      points="-1000000,40  50,40  50,60  1000000,60
+      points="-1000000,40  50,42  50,58  1000000,60
               1000000,0    -1000000,0" />
 
     <!-- Boundary line -->
     <polyline class="boundary"
-      points="-1000000,40  50,40  50,60  1000000,60" />
+      points="-1000000,40  50,42  50,58  1000000,60" />
 
     <!-- White circle (on diagonal axis, upper-right) -->
-    <circle id="circle" class="circle" r="4"/>
+    <circle id="circle" class="circle" r="3"/>
 
     <!-- Black rectangle (on diagonal axis, lower-left, long side parallel to vertical edge) -->
-    <rect id="rect" class="rect" width="4" height="14"/>
+    <rect id="rect" class="rect" width="3" height="9"/>
   </g>
 
 </svg>
@@ -96,11 +96,11 @@
   const d = 10; // offset from center along diagonal
 
   // Circle on axis: top-right
-  circle.setAttribute('cx', 50 + d);
-  circle.setAttribute('cy', 59 - d);
+  circle.setAttribute('cx', 47 + d);
+  circle.setAttribute('cy', 60 - d);
 
   // Rectangle on axis: bottom-left
-  const rw = 1, rh = 34; // vertical long side
+  const rw = -3, rh = 28; // vertical long side
   const rx = 50 - d, ry = 50 + d;
   rect.setAttribute('x', rx - rw/2);
   rect.setAttribute('y', ry - rh/2);
@@ -120,65 +120,64 @@
     })(t0);
   }
 
-  // Shared press timer
+  // ------- Input -> DOT/DASH -> Redirect -------
   let pressStart = null;
+  let navigating = false; // prevent double fires
 
-  // Keyboard (space)
-  window.addEventListener("keydown", e => {
-    if (e.code === "Space" && pressStart === null) {
-      pressStart = Date.now();
-      e.preventDefault();
-    }
-  });
-  window.addEventListener("keyup", e => {
-    if (e.code === "Space" && pressStart !== null) {
-      const duration = Date.now() - pressStart;
-      pressStart = null;
-      handleSignal(duration);
-      e.preventDefault();
-    }
-  });
+  const THRESHOLD = 250;           // < 250ms = dot, >= 250ms = dash
+  const DOT_URL   = 'duel.html';
+  const DASH_URL  = 'learn.html';
 
-  // Touch (mobile tap/hold)
-  window.addEventListener("touchstart", e => {
-    if (pressStart === null) {
-      pressStart = Date.now();
-    }
-  });
-  window.addEventListener("touchend", e => {
-    if (pressStart !== null) {
-      const duration = Date.now() - pressStart;
-      pressStart = null;
-      handleSignal(duration);
-    }
-  });
-
-  // Mouse (left click/hold)
-  window.addEventListener("mousedown", e => {
-    if (e.button === 0 && pressStart === null) { // left button
-      pressStart = Date.now();
-    }
-  });
-  window.addEventListener("mouseup", e => {
-    if (e.button === 0 && pressStart !== null) {
-      const duration = Date.now() - pressStart;
-      pressStart = null;
-      handleSignal(duration);
-    }
-  });
-
-  // Unified signal handler
-  function handleSignal(duration) {
-    if (duration < 250) {
-      // dot
-      circle.classList.add("flash");
-      setTimeout(()=>circle.classList.remove("flash"), 200);
+  function handleSignal(duration){
+    if (navigating) return;
+    if (duration < THRESHOLD) {
+      circle.classList.add('flash');
+      setTimeout(()=>circle.classList.remove('flash'), 200);
+      navigating = true;
+      setTimeout(()=>location.href = DOT_URL, 500); // tiny delay for feedback
     } else {
-      // dash
-      rect.classList.add("flash");
-      setTimeout(()=>rect.classList.remove("flash"), duration);
+      rect.classList.add('flash');
+      setTimeout(()=>rect.classList.remove('flash'), Math.min(duration, 400));
+      navigating = true;
+      setTimeout(()=>location.href = DASH_URL, 500);
     }
   }
+
+  // Keyboard (Space)
+  window.addEventListener('keydown', e => {
+    if (e.code === 'Space' && pressStart === null) {
+      pressStart = Date.now();
+      e.preventDefault();
+    }
+  });
+  window.addEventListener('keyup', e => {
+    if (e.code === 'Space' && pressStart !== null) {
+      const duration = Date.now() - pressStart; pressStart = null;
+      handleSignal(duration); e.preventDefault();
+    }
+  });
+
+  // Mouse (left)
+  window.addEventListener('mousedown', e => {
+    if (e.button === 0 && pressStart === null) pressStart = Date.now();
+  });
+  window.addEventListener('mouseup', e => {
+    if (e.button === 0 && pressStart !== null) {
+      const duration = Date.now() - pressStart; pressStart = null;
+      handleSignal(duration);
+    }
+  });
+
+  // Touch (mobile) — use passive:false so we can prevent scroll if needed
+  window.addEventListener('touchstart', e => {
+    if (pressStart === null) pressStart = Date.now();
+  }, {passive:true});
+  window.addEventListener('touchend', e => {
+    if (pressStart !== null) {
+      const duration = Date.now() - pressStart; pressStart = null;
+      handleSignal(duration);
+    }
+  });
 </script>
 
 </body>

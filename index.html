@@ -3,17 +3,27 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Morse </title>
+<title>Duel Dot Dash</title>
 <style>
   :root { --stroke: 2; --period: 60; } /* seconds per rotation */
   html,body { height:100%; margin:0; background:#fff; }
-  svg { width:100vw; height:100vh; display:block; }
+  svg {
+  width: 150%;
+  height: 150%;
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%,-50%);
+}
+
   .boundary {
-    fill:none;
-    stroke:#000;
-    stroke-width:var(--stroke);
-    vector-effect:non-scaling-stroke;
-  }
+  fill: none;
+  stroke: #000;
+  stroke-width: var(--stroke);
+  vector-effect: non-scaling-stroke;
+  stroke-linecap: square;     /* helps visually “kiss” the corners */
+  shape-rendering: crispEdges; /* reduces anti-aliasing fuzz */
+}
+
   .filled { fill:#000; stroke:none; }
 
 
@@ -55,7 +65,7 @@
   </defs>
 
   <!-- Rotating group -->
-  <g id="rotor" clip-path="url(#clip)">
+  <g id="rotor">
     <!-- Black filled side -->
     <polygon class="filled"
       points="-1000000,40  50,40  50,60  1000000,60
@@ -72,9 +82,6 @@
     <rect id="rect" class="rect" width="4" height="14"/>
   </g>
 
-  <!-- Static text -->
-  <text x="5" y="95" class="text-white">LEARN</text>
-  <text x="85" y="15" fill="#000">DUEL</text>
 </svg>
 
 

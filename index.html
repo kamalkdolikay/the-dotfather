@@ -93,7 +93,7 @@
   circle.setAttribute('cy', 59 - d);
 
   // Rectangle on axis: bottom-left
-  const rw = 5, rh = 34; // vertical long side
+  const rw = 1, rh = 34; // vertical long side
   const rx = 50 - d, ry = 50 + d;
   rect.setAttribute('x', rx - rw/2);
   rect.setAttribute('y', ry - rh/2);
@@ -165,11 +165,11 @@
     if (duration < 250) {
       // dot
       circle.classList.add("flash");
-      setTimeout(()=>circle.classList.remove("flash"), 500);
+      setTimeout(()=>circle.classList.remove("flash"), 200);
     } else {
       // dash
       rect.classList.add("flash");
-      setTimeout(()=>rect.classList.remove("flash"), 500);
+      setTimeout(()=>rect.classList.remove("flash"), duration);
     }
   }
 </script>

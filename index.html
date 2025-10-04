@@ -8,8 +8,8 @@
   :root { --stroke: 2; --period: 60; } /* seconds per rotation */
   html,body { height:100%; margin:0; background:#fff; }
   svg {
-  width: 150%;
-  height: 150%;
+  width: 130%;
+  height: 130%;
   position: absolute;
   left: 50%; top: 50%;
   transform: translate(-50%,-50%);
@@ -25,8 +25,7 @@
 }
 
   .filled { fill:#000; stroke:none; }
-
-
+  .white-filled { fill:#fff; stroke:none; }
 
   .circle { fill:#fff; pointer-events:none; transition: fill 0.2s; }
   .rect   { fill:#000; pointer-events:none; transition: fill 0.2s; }
@@ -38,6 +37,12 @@
 
   text { font-family:sans-serif; font-size:5px; }
   .text-white { fill:#fff; }
+  
+  /* Auto-inverting text based on background */
+  .adaptive-text {
+    fill: #fff;
+    mix-blend-mode: difference;
+  }
 
    /* Hint text, subtle in bottom-right */
   .hint {
@@ -54,6 +59,7 @@
     user-select: none;
     pointer-events: none;
   }
+
 </style>
 </head>
 <body>
@@ -62,11 +68,23 @@
     <clipPath id="clip" clipPathUnits="userSpaceOnUse">
       <rect x="0" y="0" width="100" height="100"/>
     </clipPath>
+    
+    <!-- Mask for detecting overlap with black areas -->
+    <mask id="textMask">
+      <rect width="100" height="100" fill="white"/>
+      <!-- Black areas will make text invisible, white areas visible -->
+      <use href="#rotor" fill="black"/>
+    </mask>
   </defs>
 
   <!-- Rotating group -->
   <g id="rotor">
-    <!-- Black filled side -->
+    <!-- White filled side (lower portion) -->
+    <polygon class="white-filled"
+      points="-1000000,40  50,42  50,58  1000000,60
+              1000000,100  -1000000,100" />
+
+    <!-- Black filled side (upper portion) -->
     <polygon class="filled"
       points="-1000000,40  50,42  50,58  1000000,60
               1000000,0    -1000000,0" />
@@ -82,7 +100,20 @@
     <rect id="rect" class="rect" width="3" height="9"/>
   </g>
 
+  <!-- Top-right title (after rotating group so it renders on top) -->
+  <text x="82" y="32"
+        font-family="Courier New, monospace"
+        font-size="4"
+        font-weight="700"
+        fill="#ffffff"
+        class="adaptive-text"
+        text-anchor="end"
+        dominant-baseline="hanging">
+    DotFather
+  </text>
+
 </svg>
+
 
 
 <div class="hint">
@@ -116,8 +147,35 @@
     (function animate(now){
       const t = ((now - t0) % period) / period;
       rotor.setAttribute('transform', `rotate(${t * 360} 50 50)`);
+      
+      // Optional: Check for overlaps and change text color
+      // checkTextOverlap(t);
+      
       requestAnimationFrame(animate);
     })(t0);
+  }
+
+  // Alternative approach: JavaScript-based overlap detection
+  function checkTextOverlap(rotationProgress) {
+    const textElement = document.querySelector('.adaptive-text');
+    const polygon = document.querySelector('.filled');
+    
+    // Get text bounding box (approximate)
+    const textX = 60, textY = 40;
+    const textWidth = 15, textHeight = 4; // approximate text dimensions
+    
+    // Calculate if the rotating black polygon overlaps with text area
+    const angle = rotationProgress * 360;
+    
+    // Simplified check: if rotation brings black area near text position
+    // This is a basic example - you'd want more precise collision detection
+    const isOverBlackArea = (angle > 315 || angle < 45) && textY < 50;
+    
+    if (isOverBlackArea) {
+      textElement.setAttribute('fill', '#ffffff'); // white on black
+    } else {
+      textElement.setAttribute('fill', '#000000'); // black on white
+    }
   }
 
   // ------- Input -> DOT/DASH -> Redirect -------

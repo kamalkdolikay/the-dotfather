@@ -164,6 +164,8 @@ export const Hooks = {
       this.identity = loadIdentity()
       this.highScore = loadHighScore()
       this.activeMatchId = loadActiveMatch()
+      this.pendingMatchId = null
+      this.clockOffsetMs = 0
       this.answerSymbols = []
       this.idleTimeout = null
       this.countdownHandle = null
@@ -232,8 +234,9 @@ export const Hooks = {
 
     joinMatch(matchId) {
       if (!matchId) return
-      storeActiveMatch(matchId)
-      this.activeMatchId = matchId
+      if (this.pendingMatchId === matchId || this.activeMatchId === matchId) return
+
+      this.pendingMatchId = matchId
       this.mode = "matched"
       this.updateQueueStatus("Opponent found! Preparing match...")
 
@@ -243,36 +246,66 @@ export const Hooks = {
       }
 
       const socket = ensureChannelSocket(this.identity)
-      this.gameChannel = socket.channel(`game:${matchId}`, {})
+      const channel = socket.channel(`game:${matchId}`, {})
+      this.gameChannel = channel
 
-      this.gameChannel.on("round_started", payload => this.handleRoundStarted(payload))
-      this.gameChannel.on("round_result", payload => this.handleRoundResult(payload))
-      this.gameChannel.on("match_over", payload => this.handleMatchOver(payload))
-      this.gameChannel.on("answer_feedback", payload => this.handleAnswerFeedback(payload))
+      channel.on("round_started", payload => this.handleRoundStarted(payload))
+      channel.on("round_result", payload => this.handleRoundResult(payload))
+      channel.on("match_over", payload => this.handleMatchOver(payload))
+      channel.on("answer_feedback", payload => this.handleAnswerFeedback(payload))
 
-      this.gameChannel
+      channel
         .join()
-        .receive("ok", snapshot => this.handleSnapshot(snapshot))
-        .receive("error", _reason => {
-          this.updateQueueStatus("Unable to join match. Try again.")
-          this.mode = "idle"
-          this.activeMatchId = null
-          storeActiveMatch(null)
+        .receive("ok", snapshot => {
+          this.pendingMatchId = null
+          this.activeMatchId = matchId
+          storeActiveMatch(matchId)
+          this.handleSnapshot(snapshot)
         })
+        .receive("error", _reason => {
+          this.handleFailedMatchJoin(matchId)
+        })
+    },
+
+    handleFailedMatchJoin(matchId) {
+      if (this.gameChannel) {
+        this.gameChannel.leave()
+        this.gameChannel = null
+      }
+
+      if (this.pendingMatchId === matchId) {
+        this.pendingMatchId = null
+      }
+      if (this.activeMatchId === matchId) {
+        this.activeMatchId = null
+      }
+
+      storeActiveMatch(null)
+      this.mode = "idle"
+      this.clearCountdown()
+      this.answerSymbols = []
+      this.renderAnswer()
+      this.feedbackEl.textContent = ""
+      this.renderScoreboard({})
+      this.updateQueueStatus("Press Dash to start matching")
     },
 
     handleSnapshot(snapshot) {
       const status = snapshot.status || "waiting"
+      this.updateClockOffset(snapshot.server_now_ms)
       this.renderScoreboard(snapshot.players || {})
       this.updateScores(snapshot.scores || {})
 
       if (snapshot.question) {
+        const roundMs = snapshot.round_ms || 0
+        const targetDeadline = this.resolveDeadline(snapshot.deadline_ms, snapshot.remaining_ms, roundMs)
+
         this.applyQuestion(
           snapshot.question,
           snapshot.round || 0,
           snapshot.total_rounds || 0,
-          snapshot.deadline_ms || snapshot.remaining_ms || (Date.now() + (snapshot.round_ms || 0)),
-          snapshot.round_ms || 0
+          targetDeadline,
+          roundMs
         )
       }
 
@@ -283,15 +316,26 @@ export const Hooks = {
       } else {
         this.mode = "matched"
       }
+
+      if (status === "waiting") {
+        this.updateQueueStatus("Waiting for opponent to connect...")
+      } else if (status === "running") {
+        this.updateQueueStatus("Match in progress")
+      }
     },
 
     handleRoundStarted(payload) {
       this.mode = "answering"
+      this.clearIdleTimer()
       this.answerSymbols = []
       this.renderAnswer()
       this.feedbackEl.textContent = ""
-      this.applyQuestion(payload.question, payload.round, payload.total_rounds, payload.deadline_ms, payload.round_ms)
+      this.updateClockOffset(payload.server_now_ms)
+      const roundMs = payload.round_ms || 0
+      const targetDeadline = this.resolveDeadline(payload.deadline_ms, null, roundMs)
+      this.applyQuestion(payload.question, payload.round, payload.total_rounds, targetDeadline, roundMs)
       this.renderScoreboard(payload.players || {})
+      this.updateScores(payload.scores || {})
       this.updateQueueStatus("Match in progress")
     },
 
@@ -313,9 +357,14 @@ export const Hooks = {
       const topScore = Math.max(...Object.values(scores))
       if (Object.keys(scores).length > 0) {
         this.feedbackEl.textContent =
-          myScore >= topScore ? `Congratulations! You scored ${myScore}! You are the winner!` : `You scored ${myScore}. Sorry, you lose the game, try again.`
+          myScore >= topScore
+            ? `Congratulations! You scored ${myScore}! You are the winner!`
+            : `You scored ${myScore}. Sorry, you lose the game, try again.`
       }
       this.matchSummaryEl.textContent = "Press Dash to start a new matching or Long-Dash to exit."
+      this.updateQueueStatus("Match complete. Press Dash to start matching")
+      this.answerSymbols = []
+      this.renderAnswer()
 
       if (myScore > this.highScore) {
         this.highScore = myScore
@@ -325,6 +374,7 @@ export const Hooks = {
 
       storeActiveMatch(null)
       this.activeMatchId = null
+      this.pendingMatchId = null
     },
 
     handleAnswerFeedback(payload) {
@@ -416,11 +466,12 @@ export const Hooks = {
       this.currentPatternHint = question.pattern_hint || ""
       this.questionPromptEl.textContent = question.prompt
       this.questionTypeEl.textContent = question.type === "word" ? "Word challenge" : "Letter challenge"
-      this.questionCounterEl.textContent = totalRounds > 0 ? `${round} / ${totalRounds}` : "¨C"
+      this.questionCounterEl.textContent = totalRounds > 0 ? `${round} / ${totalRounds}` : "--"
       this.answerSymbols = []
       this.renderAnswer()
       this.feedbackEl.textContent = ""
-      this.startCountdown(deadlineMs || (Date.now() + (roundMs || 0)))
+      const targetDeadline = this.resolveDeadline(deadlineMs, null, roundMs)
+      this.startCountdown(targetDeadline)
     },
 
     renderAnswer() {
@@ -476,22 +527,50 @@ export const Hooks = {
       }
     },
 
-    startCountdown(deadlineMs) {
+    resolveDeadline(deadlineMs, remainingMs, roundMs) {
+      if (typeof deadlineMs === "number" && Number.isFinite(deadlineMs)) {
+        return deadlineMs + (this.clockOffsetMs || 0)
+      }
+      if (typeof remainingMs === "number" && Number.isFinite(remainingMs)) {
+        return Date.now() + remainingMs
+      }
+      if (typeof roundMs === "number" && Number.isFinite(roundMs) && roundMs > 0) {
+        return Date.now() + roundMs
+      }
+      return null
+    },
+
+    updateClockOffset(serverNowMs) {
+      if (typeof serverNowMs === "number" && Number.isFinite(serverNowMs)) {
+        this.clockOffsetMs = Date.now() - serverNowMs
+      }
+    },
+
+    startCountdown(targetTimestamp) {
       this.clearCountdown()
-      this.deadline = deadlineMs
+
+      if (typeof targetTimestamp !== "number" || Number.isNaN(targetTimestamp)) {
+        this.deadline = null
+        if (this.timerEl) this.timerEl.textContent = "--"
+        return
+      }
+
+      this.deadline = targetTimestamp
 
       const tick = () => {
-        if (!this.deadline) return
+        if (this.deadline == null) return
         const remaining = Math.max(this.deadline - Date.now(), 0)
         if (this.timerEl) {
           this.timerEl.textContent = `${(remaining / 1000).toFixed(1)}s`
         }
         if (remaining > 0) {
           this.countdownHandle = requestAnimationFrame(tick)
+        } else {
+          this.countdownHandle = null
         }
       }
 
-      this.countdownHandle = requestAnimationFrame(tick)
+      tick()
     },
 
     clearCountdown() {
@@ -500,6 +579,7 @@ export const Hooks = {
         this.countdownHandle = null
       }
       this.deadline = null
+      if (this.timerEl) this.timerEl.textContent = "--"
     },
 
     maybeSubmitAnswer() {
@@ -515,5 +595,6 @@ export const Hooks = {
     }
   }
 }
+
 
 

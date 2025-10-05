@@ -41,6 +41,7 @@ defmodule TheDotfather.GameServer do
       round_index: 0,
       timer_ref: nil,
       deadline_ms: nil,
+      deadline_wall_ms: nil,
       status: :waiting,
       players: %{
         p1.user_id => new_player(p1),
@@ -94,7 +95,8 @@ defmodule TheDotfather.GameServer do
 
   @impl true
   def handle_info(:round_timeout, state) do
-    conclude_round(maybe_cancel_timer(state))
+    new_state = state |> maybe_cancel_timer() |> conclude_round()
+    {:noreply, new_state}
   end
 
   ## Internal helpers -----------------------------------------------------------
@@ -162,8 +164,10 @@ defmodule TheDotfather.GameServer do
       |> Map.put(:status, :running)
       |> Map.put(:players, reset_round_flags(state.players))
 
-    start_ts = now_ms()
-    deadline = start_ts + @round_time_ms
+    start_monotonic = now_ms()
+    deadline_monotonic = start_monotonic + @round_time_ms
+    start_wall = System.system_time(:millisecond)
+    deadline_wall = start_wall + @round_time_ms
 
     ref = Process.send_after(self(), :round_timeout, @round_time_ms)
 
@@ -171,12 +175,14 @@ defmodule TheDotfather.GameServer do
       round: round_index,
       total_rounds: length(state.rounds),
       round_ms: @round_time_ms,
-      server_now_ms: start_ts,
-      deadline_ms: deadline,
-      question: build_question_payload(question)
+      server_now_ms: start_wall,
+      deadline_ms: deadline_wall,
+      question: build_question_payload(question),
+      players: public_players(state),
+      scores: scores_map(state.players)
     })
 
-    %{state | timer_ref: ref, deadline_ms: deadline}
+    %{state | timer_ref: ref, deadline_ms: deadline_monotonic, deadline_wall_ms: deadline_wall}
   end
 
   defp conclude_round(state) do
@@ -294,8 +300,8 @@ defmodule TheDotfather.GameServer do
       total_rounds: length(state.rounds),
       round_ms: @round_time_ms,
       remaining_ms: remaining_ms(state),
-      server_now_ms: now_ms(),
-      deadline_ms: state.deadline_ms,
+      server_now_ms: System.system_time(:millisecond),
+      deadline_ms: state.deadline_wall_ms,
       question: maybe_current_question(state),
       scores: scores_map(state.players),
       players: public_players(state)
@@ -334,11 +340,13 @@ defmodule TheDotfather.GameServer do
 
   defp remaining_ms(_), do: 0
 
-  defp maybe_cancel_timer(%{timer_ref: nil} = state), do: state
+  defp maybe_cancel_timer(%{timer_ref: nil} = state) do
+    %{state | deadline_ms: nil, deadline_wall_ms: nil}
+  end
 
   defp maybe_cancel_timer(%{timer_ref: ref} = state) do
     Process.cancel_timer(ref)
-    %{state | timer_ref: nil}
+    %{state | timer_ref: nil, deadline_ms: nil, deadline_wall_ms: nil}
   end
 
   defp topic(state), do: "game:#{state.id}"

@@ -12,7 +12,7 @@ config :the_dotfather,
   generators: [timestamp_type: :utc_datetime]
 
 # Configures the endpoint
-config :the_dotfather, :start_repo?, true
+config :the_dotfather, :start_repo?, false
 
 config :the_dotfather, TheDotfatherWeb.Endpoint,
   url: [host: "localhost"],

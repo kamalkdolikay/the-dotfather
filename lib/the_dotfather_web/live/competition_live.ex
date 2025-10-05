@@ -10,6 +10,11 @@ defmodule TheDotfatherWeb.CompetitionLive do
   end
 
   @impl true
+  def handle_event("morse_input", _params, socket) do
+    {:noreply, socket}
+  end
+
+  @impl true
   def render(assigns) do
     ~H"""
     <div id="competition-shell" class="min-h-screen bg-slate-950 text-slate-100" phx-hook="MorseInput">

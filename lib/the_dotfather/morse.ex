@@ -39,9 +39,8 @@ defmodule TheDotfather.Morse do
 
   @spec pattern_for(String.t()) :: [symbol()]
   def pattern_for(letter) when is_binary(letter) do
-    letter
-    |> String.upcase()
-    |> Map.fetch!(@alphabet)
+    @alphabet
+    |> Map.fetch!(String.upcase(letter))
   end
 
   def random_letters(from_letters, count) do
@@ -52,11 +51,20 @@ defmodule TheDotfather.Morse do
   end
 
   def random_word(from_letters, length) do
-    from_letters
-    |> Enum.map(&String.upcase/1)
-    |> Stream.cycle()
-    |> Enum.take_random(length)
-    |> Enum.join()
+    letters =
+      from_letters
+      |> Enum.map(&String.upcase/1)
+
+    case letters do
+      [] ->
+        ""
+
+      _ ->
+        for _ <- 1..length, into: [] do
+          Enum.random(letters)
+        end
+        |> Enum.join()
+    end
   end
 
   @spec encode_word(String.t()) :: [[symbol()]]

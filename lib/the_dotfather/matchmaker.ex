@@ -37,18 +37,24 @@ defmodule TheDotfather.Matchmaker do
   def handle_call({:find_game, ch_pid, player}, _from, %{queue: queue} = state) do
     Process.monitor(ch_pid)
 
-    case :queue.out(queue) do
-      {{:value, {other_pid, other_player}}, remaining_queue} ->
-        {:ok, match_id} = start_match(other_player, player)
+    cond do
+      already_queued?(queue, ch_pid) ->
+        {:reply, :queued, state}
 
-        send(other_pid, {:match_found, match_id, :p1})
-        send(ch_pid, {:match_found, match_id, :p2})
+      true ->
+        case take_opponent(queue, ch_pid, Map.get(player, :user_id)) do
+          {:ok, {other_pid, other_player}, remaining_queue} ->
+            {:ok, match_id} = start_match(other_player, player)
 
-        {:reply, {:paired, match_id}, %{state | queue: remaining_queue}}
+            send(other_pid, {:match_found, match_id, :p1})
+            send(ch_pid, {:match_found, match_id, :p2})
 
-      {:empty, _} ->
-        updated_queue = :queue.in({ch_pid, player}, queue)
-        {:reply, :queued, %{state | queue: updated_queue}}
+            {:reply, {:paired, match_id}, %{state | queue: remaining_queue}}
+
+          {:none, remaining_queue} ->
+            updated_queue = :queue.in({ch_pid, player}, remaining_queue)
+            {:reply, :queued, %{state | queue: updated_queue}}
+        end
     end
   end
 
@@ -60,6 +66,39 @@ defmodule TheDotfather.Matchmaker do
   @impl true
   def handle_info({:DOWN, _mref, :process, ch_pid, _reason}, state) do
     {:noreply, %{state | queue: drop_pid(state.queue, ch_pid)}}
+  end
+
+  defp already_queued?(queue, ch_pid) do
+    queue
+    |> :queue.to_list()
+    |> Enum.any?(fn {pid, _player} -> pid == ch_pid end)
+  end
+
+  defp take_opponent(queue, ch_pid, user_id) do
+    take_opponent(queue, ch_pid, user_id, [])
+  end
+
+  defp take_opponent(queue, ch_pid, user_id, skipped) do
+    case :queue.out(queue) do
+      {{:value, {pid, other_player}}, rest} ->
+        cond do
+          pid == ch_pid ->
+            take_opponent(rest, ch_pid, user_id, [{pid, other_player} | skipped])
+
+          Map.get(other_player, :user_id) == user_id ->
+            take_opponent(rest, ch_pid, user_id, [{pid, other_player} | skipped])
+
+          true ->
+            {:ok, {pid, other_player}, requeue_skipped(rest, skipped)}
+        end
+
+      {:empty, _} ->
+        {:none, requeue_skipped(queue, skipped)}
+    end
+  end
+
+  defp requeue_skipped(queue, skipped) do
+    Enum.reduce(skipped, queue, fn entry, acc -> :queue.in_r(entry, acc) end)
   end
 
   ## Helpers

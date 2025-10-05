@@ -1,0 +1,174 @@
+/* :root {
+  --backgroundColor: rgba(246, 241, 209);
+  --colorShadeA: rgb(106, 163, 137);
+  --colorShadeB: rgb(121, 186, 156);
+  --colorShadeC: rgb(150, 232, 195);
+  --colorShadeD: rgb(187, 232, 211);
+  --colorShadeE: rgb(205, 255, 232);
+} */
+
+:root {
+  --backgroundColor: rgba(246, 241, 209);
+  --colorShadeA: rgb(106, 163, 137);
+  --colorShadeB: rgb(121, 186, 156);
+  --colorShadeC: rgb(150, 232, 195);
+  --colorShadeD: rgb(187, 232, 211);
+  --colorShadeE: rgb(205, 255, 232);
+}
+
+.flex-row {
+  display: flex;
+  flex-direction: row;
+}
+
+body {
+  background: aliceblue;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  gap: 20px;
+  font-family: monospace;
+}
+
+.computer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.monitor {
+  width: 270px;
+  height: 210px;
+  background: #888888;
+  border-radius: 6px;
+  position: relative;
+  box-shadow: 0 0 0 3px #000 inset;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.screen {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  right: 18px;
+  bottom: 18px;
+  background: #000;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #00ff88;
+  font-size: 3rem;
+  text-shadow: 0 0 6px #00ff88;
+  transition: opacity 0.3s ease;
+}
+
+.cpu {
+  width: 300px;
+  height: 90px;
+  background: #88888880;
+  margin-top: 5px;
+  border-radius: 4px;
+  position: relative;
+  box-shadow: 0 0 0 3px #000 inset;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+.drive {
+  width: 80px;
+  height: 65px;
+  background: #888888;
+  border: 2px solid #000;
+  margin-top: 4px;
+  justify-content: center;
+}
+
+.vents {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.vent {
+  width: 70px;
+  height: 4px;
+  background: #000;
+}
+
+.keyboard {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2em 2em 3.5em 2em;
+  border: 1px solid var(--colorShadeA);
+  border-radius: 1em;
+  background: white;
+  transform: perspective(600px) rotateX(35deg);
+  box-shadow: 0px 15px 0 2px var(--colorShadeB);
+}
+
+button.big-button {
+  position: relative;
+  padding: 1em 2em;
+  border: 2px solid var(--colorShadeB);
+  border-radius: 1em;
+  background: var(--colorShadeE);
+  color: var(--colorShadeA);
+  font-size: 1.5rem;
+  font-weight: 700;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transition: all 150ms ease;
+  z-index: 1;
+}
+
+button.big-button::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background: var(--colorShadeC);
+  border-radius: inherit;
+  box-shadow: 0 0 0 2px var(--colorShadeB), 0 12px 0 0 var(--colorShadeA);
+  transform: translate3d(0, 0.75em, -1em);
+  transition: all 150ms ease;
+  z-index: -1;
+}
+
+button.big-button:active {
+  background: var(--colorShadeD);
+  transform: translateY(0.75em);
+}
+
+button.big-button:active::before {
+  box-shadow: 0 0 0 2px var(--colorShadeB), 0 0.25em 0 0 var(--colorShadeB);
+}
+
+/* SVG display area */
+.svg-container {
+  width: 200px;
+  height: 120px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.svg-container svg {
+  width: 100%;
+  height: 100%;
+}
+
+.word-label {
+    font-family: 'Courier New', Courier, monospace;
+}

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Retro Computer Alphabet Player</title>
+    <link rel="stylesheet" href="monitor.css" />
+    <style>
+      .word-label {
+        text-align: center;
+        font-size: 1rem;
+        margin-top: 10px;
+        color: #333;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="computer">
+      <div class="monitor">
+        <div class="screen" id="screen">S</div>
+      </div>
+      <div class="cpu">
+        <div class="vents">
+          <div class="vent"></div>
+          <div class="vent"></div>
+          <div class="vent"></div>
+          <div class="vent"></div>
+        </div>
+        <div class="drive flex-row">
+          <img src="circle.svg" height="70" width="70" alt="" />
+        </div>
+      </div>
+    </div>
+
+    <div class="svg-container" id="svgArea"></div>
+    <div class="word-label" id="wordLabel"></div>
+
+    <div class="keyboard">
+      <button class="big-button" id="nextButton">Next</button>
+    </div>
+
+    <script>
+      // --- CONFIGURATION ---
+      // Only show these characters: S T O R M
+      const letters = ["S", "T", "O", "R", "M"];
+
+      // Word mapping for each letter
+      const wordMap = {
+        M: "Mask",
+        O: "Onion",
+        R: "Raccoon",
+        S: "Signal",
+        T: "Tree",
+      };
+
+      const svgFolder = "svgs";
+      let index = 0;
+      const screen = document.getElementById("screen");
+      const svgArea = document.getElementById("svgArea");
+      const wordLabel = document.getElementById("wordLabel");
+      const nextButton = document.getElementById("nextButton");
+
+      async function loadSVG(letter) {
+        const filePath = `${svgFolder}/${letter}.svg`;
+
+        try {
+          const response = await fetch(filePath);
+          if (!response.ok) throw new Error(`Missing SVG for ${letter}`);
+          const svgText = await response.text();
+
+          svgArea.innerHTML = svgText;
+          wordLabel.textContent = `${wordMap[letter] || "Unknown"}`;
+
+          const svgElement = svgArea.querySelector("svg");
+
+          if (svgElement) {
+            // Fade in the SVG itself
+            svgElement.style.opacity = 0;
+            svgElement.style.transition = "opacity 0.5s ease";
+            setTimeout(() => (svgElement.style.opacity = 1), 100);
+
+            // --- Find all unique classes in this SVG ---
+            const allElements = svgElement.querySelectorAll("[class]");
+            const uniqueClasses = [];
+
+            allElements.forEach((el) => {
+              const classList = el.getAttribute("class").split(/\s+/);
+              classList.forEach((cls) => {
+                if (cls && !uniqueClasses.includes(cls)) {
+                  uniqueClasses.push(cls);
+                }
+              });
+            });
+
+            // Hide all elements initially
+            uniqueClasses.forEach((cls) => {
+              svgElement.querySelectorAll(`.${cls}`).forEach((el) => {
+                el.style.opacity = 0;
+                el.style.transition = "opacity 0.6s ease";
+                el.style.fill = "red";
+              });
+            });
+
+            // Reveal each class group one after another
+            uniqueClasses.forEach((cls, i) => {
+              setTimeout(() => {
+                const group = svgElement.querySelectorAll(`.${cls}`);
+                group.forEach((el) => (el.style.opacity = 1));
+              }, 800 * (i + 1));
+            });
+          }
+        } catch (error) {
+          svgArea.innerHTML = `<div style="color:gray;font-size:0.9rem;">(no SVG for ${letter})</div>`;
+          wordLabel.textContent = `${wordMap[letter] || "Unknown"}`;
+        }
+      }
+
+      function showNextLetter() {
+        index++;
+
+        // If it's the last letter (M)
+        if (index >= letters.length) {
+          // Disable the button to prevent multiple clicks
+          nextButton.disabled = true;
+          wordLabel.textContent = "Redirecting...";
+          // Small visual blink on the monitor
+          screen.style.transition = "opacity 0.3s ease";
+          screen.style.opacity = 0;
+
+          setTimeout(() => {
+            screen.style.opacity = 1;
+            screen.textContent = "✔";
+          }, 500);
+
+          // Redirect after a short delay (3 seconds)
+          setTimeout(() => {
+            window.location.href = "duel.html";
+          }, 3000);
+
+          return; // stop here
+        }
+
+        const letter = letters[index];
+
+        // Fade transition on screen
+        screen.style.opacity = 0;
+        setTimeout(() => {
+          screen.textContent = letter;
+          screen.style.opacity = 1;
+          loadSVG(letter);
+        }, 250);
+      }
+
+      nextButton.addEventListener("click", showNextLetter);
+
+      // Initial screen load
+      screen.textContent = letters[index];
+      loadSVG(letters[index]);
+    </script>
+  </body>
+</html>

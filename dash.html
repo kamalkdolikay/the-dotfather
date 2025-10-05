@@ -67,14 +67,14 @@
   <text x="-20" y="18" 
         font-size="6" 
         class="congrats-text">
-    You've mastered the DASH
+    Hold a little longer it becomes a DASH
   </text>
   
-  <text x="-8" y="78" 
+  <text x="5" y="78" 
         font-size="6" 
         class="congrats-text delayed-text"
         id="longDashInstruction">
-    Now try holding even longer for LONG DASH
+    Hold even longer for LONG DASH
   </text>
   
   <!-- big centered rectangle -->
@@ -125,7 +125,7 @@
       // Long dash: redirect to long_dash.html
       navigating = true;
       setTimeout(() => longDashRedirect(), FLASH_MS);
-    } else if(duration >= SHORT_THRESHOLD){
+    } else{
       // Regular dash: prompt user to hold longer
       const longDashInstruction = document.getElementById('longDashInstruction');
       

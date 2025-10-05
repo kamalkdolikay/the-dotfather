@@ -70,11 +70,11 @@
     Hold a little longer it becomes a DASH
   </text>
   
-  <text x="5" y="78" 
+  <text x="14" y="78" 
         font-size="6" 
         class="congrats-text delayed-text"
         id="longDashInstruction">
-    Hold even longer for LONG DASH
+    Hold even longer for HOLD
   </text>
   
   <!-- big centered rectangle -->
@@ -87,10 +87,10 @@
   let pressStart=null; 
   let navigating = false;
   const SHORT_THRESHOLD=250;  // >= dash
-  const LONG_THRESHOLD=1000;  // >= long dash (1 second)
+  const LONG_THRESHOLD=1000;  // >= HOLD (1 second)
   const FLASH_MS=500;   // flash time
   const back=()=>location.href="index.html";
-  const longDashRedirect=()=>location.href="long_dash.html";
+  const holdRedirect=()=>location.href="hold.html";
 
   const rect=document.getElementById('learnRect');
   const gaugeFill = document.getElementById('gaugeFill');
@@ -122,9 +122,9 @@
   function handleSignal(duration){
     if (navigating) return;
     if(duration >= LONG_THRESHOLD){
-      // Long dash: redirect to long_dash.html
+      // Hold: redirect to hold.html
       navigating = true;
-      setTimeout(() => longDashRedirect(), FLASH_MS);
+      setTimeout(() => holdRedirect(), FLASH_MS);
     } else{
       // Regular dash: prompt user to hold longer
       const longDashInstruction = document.getElementById('longDashInstruction');
@@ -134,7 +134,7 @@
       
       // Change text after fade out completes
       setTimeout(() => {
-        longDashInstruction.textContent = 'Hold even longer for LONG DASH';
+        longDashInstruction.textContent = 'Hold even longer for HOLD';
         // Fade back in
         longDashInstruction.style.opacity = '1';
       }, 700);

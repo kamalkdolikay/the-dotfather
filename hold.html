@@ -31,13 +31,11 @@
   <text x="-20" y="8"  
         font-size="6" 
         class="congrats-text">
-    Now you are ready to learn some Morse Code!
+    You are ready to learn some Morse Code!
   </text>
   
   <!-- Summary of learned skills -->
-  
-  
-  
+
   
   <!-- DOT representation -->
   <circle cx="0" cy="40" r="6" fill="#fff"/>
@@ -48,10 +46,16 @@
   <text x="37" y="55" font-size="6" class="congrats-text">DASH</text>
   
   <!-- HOLD representation -->
-  <rect x="65" y="70" width="25" height="4" rx="2" ry="2" fill="#fff"/>
-  <text x="75" y="78" font-size="2.5" class="congrats-text">HOLD</text>
+  <polygon points="80,42 105,42 105,37" fill="#fff"/>
+  <text x="85" y="55" font-size="6" class="congrats-text">HOLD</text>
   
-  <!-- Instructions to return -->
+  <text x="14" y="78" 
+        font-size="6" 
+        class="congrats-text delayed-text"
+        id="longDashInstruction">
+    HOLD to learn characters . . . 
+
+  </text>
 </svg>
 
 <script>

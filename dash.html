@@ -1,71 +1,203 @@
 <!doctype html>
 <html lang="en">
 <head>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Learn</title>
 <style>
   html,body{height:100%;margin:0;background:#fff}
   svg{width:100vw;height:100vh;display:block}
-  .rect{fill:#000; transition: fill 0.2s;}
-  /* Flash effect */
-  .rect.flash { fill:#666 !important; }
+  .rect{fill:#000;}
+ 
+  
+  /* Congratulations message styling */
+  .congrats-text {
+    fill: #000;
+    font-family: "EB Garamond", serif;
+    font-weight: 700;
+    text-anchor: start;
+    dominant-baseline: hanging;
+  }
+  
+  /* Delayed text that appears after 2 seconds */
+  .delayed-text {
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+  }
+  
+  .delayed-text.show {
+    opacity: 1;
+  }
+  
+  /* Gauge effect for rectangle fill */
+  .gauge-fill {
+    fill: #888;
+    transform-origin: 25% 0%;
+    transform: scaleX(0);
+    transition: transform 0.1s ease-out;
+  }
+  
+  .gauge-fill.filling {
+    transition: transform 1s linear;
+    transform: scaleX(1);
+  }
+  
+  .gauge-fill.filled {
+    transform: scaleX(1);
+    transition: none;
+  }
+  
+  .gauge-fill.shrinking {
+    transition: transform 0.15s ease-in;
+    transform: scaleX(0);
+  }
 </style>
 </head>
 <body>
 <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+  <!-- Congratulations message in top-left corner -->
+  <text x="-20" y="8" 
+        font-size="6" 
+        class="congrats-text">
+    Excellent!
+  </text>
+  <text x="-20" y="18" 
+        font-size="6" 
+        class="congrats-text">
+    You've mastered the DASH
+  </text>
+  
+  <text x="-8" y="78" 
+        font-size="6" 
+        class="congrats-text delayed-text"
+        id="longDashInstruction">
+    Now try holding even longer for LONG DASH
+  </text>
+  
   <!-- big centered rectangle -->
-  <rect id="learnRect" class="rect" x="20" y="40" width="60" height="20"/>
+  <rect id="learnRect" class="rect" x="25" y="45" width="50" height="15"/>
+  <!-- Gauge fill that grows during hold -->
+  <rect id="gaugeFill" class="gauge-fill" x="25" y="45" width="50" height="15"/>
 </svg>
 
 <script>
   let pressStart=null; 
-  const THRESHOLD=250;  // >= dash
+  let navigating = false;
+  const SHORT_THRESHOLD=250;  // >= dash
+  const LONG_THRESHOLD=1000;  // >= long dash (1 second)
   const FLASH_MS=500;   // flash time
   const back=()=>location.href="index.html";
+  const longDashRedirect=()=>location.href="long_dash.html";
 
   const rect=document.getElementById('learnRect');
+  const gaugeFill = document.getElementById('gaugeFill');
+  
+  // Show delayed text after 2 seconds
+  setTimeout(() => {
+    const longDashInstruction = document.getElementById('longDashInstruction');
+    longDashInstruction.classList.add('show');
+  }, 2000);
+
+  function startGaugeEffect() {
+    gaugeFill.classList.remove('shrinking', 'filled');
+    gaugeFill.classList.add('filling');
+    
+    // After 1 second, switch to filled state (no transition, stays at scaleX(1))
+    setTimeout(() => {
+      if (pressStart !== null) { // Only if still pressing
+        gaugeFill.classList.remove('filling');
+        gaugeFill.classList.add('filled');
+      }
+    }, 1000);
+  }
+
+  function stopGaugeEffect() {
+    gaugeFill.classList.remove('filling', 'filled');
+    gaugeFill.classList.add('shrinking');
+  }
 
   function handleSignal(duration){
-    if(duration>=THRESHOLD){
-      // dash: flash then return
-      rect.classList.add('flash');
-      setTimeout(()=>back(), FLASH_MS);
+    if (navigating) return;
+    if(duration >= LONG_THRESHOLD){
+      // Long dash: redirect to long_dash.html
+      navigating = true;
+      setTimeout(() => longDashRedirect(), FLASH_MS);
+    } else if(duration >= SHORT_THRESHOLD){
+      // Regular dash: prompt user to hold longer
+      const longDashInstruction = document.getElementById('longDashInstruction');
+      
+      // Fade out
+      longDashInstruction.style.opacity = '0';
+      
+      // Change text after fade out completes
+      setTimeout(() => {
+        longDashInstruction.textContent = 'Hold even longer for LONG DASH';
+        // Fade back in
+        longDashInstruction.style.opacity = '1';
+      }, 700);
     }
+    // Ignore very short presses (< 250ms)
   }
 
   // Keyboard
   window.addEventListener("keydown",e=>{
     if(e.code==="Enter"&&pressStart===null){
-      pressStart=Date.now();e.preventDefault();
+      pressStart=Date.now();
+      startGaugeEffect();
+      e.preventDefault();
     }
   });
   window.addEventListener("keyup",e=>{
     if(e.code==="Enter"&&pressStart!==null){
-      handleSignal(Date.now()-pressStart);
-      pressStart=null;e.preventDefault();
+      const duration = Date.now()-pressStart;
+      pressStart=null;
+      // Only shrink gauge if it was less than 1 second
+      if (duration < LONG_THRESHOLD) {
+        stopGaugeEffect();
+      }
+      handleSignal(duration);
+      e.preventDefault();
     }
   });
 
   // Mouse
   window.addEventListener("mousedown",e=>{
-    if(e.button===0&&pressStart===null) pressStart=Date.now();
+    if(e.button===0&&pressStart===null) {
+      pressStart=Date.now();
+      startGaugeEffect();
+    }
   });
   window.addEventListener("mouseup",e=>{
     if(e.button===0&&pressStart!==null){
-      handleSignal(Date.now()-pressStart);
+      const duration = Date.now()-pressStart;
       pressStart=null;
+      // Only shrink gauge if it was less than 1 second
+      if (duration < LONG_THRESHOLD) {
+        stopGaugeEffect();
+      }
+      handleSignal(duration);
     }
   });
 
   // Touch
   window.addEventListener("touchstart",()=>{
-    if(pressStart===null) pressStart=Date.now();
+    if(pressStart===null) {
+      pressStart=Date.now();
+      startGaugeEffect();
+    }
   },{passive:true});
   window.addEventListener("touchend",()=>{
     if(pressStart!==null){
-      handleSignal(Date.now()-pressStart);
+      const duration = Date.now()-pressStart;
       pressStart=null;
+      // Only shrink gauge if it was less than 1 second
+      if (duration < LONG_THRESHOLD) {
+        stopGaugeEffect();
+      }
+      handleSignal(duration);
     }
   });
 </script>

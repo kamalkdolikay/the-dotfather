@@ -16,6 +16,29 @@
   .circle { fill:#fff; transition: fill 0.15s; }  /* white circle */
   .circle.flash { fill:#888 !important; }         /* grey flash */
   
+  /* Gauge effect for hold duration */
+  .gauge-fill {
+    fill: #888;
+    transform-origin: center;
+    transform: scale(0);
+    transition: transform 0.1s ease-out;
+  }
+  
+  .gauge-fill.filling {
+    transition: transform 0.25s linear;
+    transform: scale(1);
+  }
+  
+  .gauge-fill.filled {
+    transform: scale(1);
+    transition: none;
+  }
+  
+  .gauge-fill.shrinking {
+    transition: transform 0.15s ease-in;
+    transform: scale(0);
+  }
+  
   /* Congratulations message styling */
   .congrats-text {
     fill: #fff;
@@ -28,7 +51,7 @@
   /* Delayed text that appears after 2 seconds */
   .delayed-text {
     opacity: 0;
-    transition: opacity 0.5s ease-in-out;
+    transition: opacity 1s ease-in-out;
   }
   
   .delayed-text.show {
@@ -50,7 +73,7 @@
     You've learned to input a DOT
   </text>
   
-  <text x="15" y="78" 
+  <text x="14" y="78" 
         font-size="6" 
         class="congrats-text delayed-text"
         id="dashInstruction">
@@ -58,33 +81,66 @@
   </text>
 
   <!-- centered circle -->
-  <circle id="dotCircle" class="circle" cx="50" cy="50" r="20"/>
+  <circle id="dotCircle" class="circle" cx="50" cy="50" r="16"/>
+  <!-- Gauge fill that grows during hold -->
+  <circle id="gaugeFill" class="gauge-fill" cx="50" cy="50" r="16"/>
 </svg>
 
 <script>
   let pressStart = null;
   let navigating = false;               // prevent double redirects
-  const THRESHOLD = 250;                // < 250ms = dot
+  const THRESHOLD = 250;                // < 250ms = dot, >= 250ms = dash
   const FLASH_MS  = 500;
-  const back = () => location.href = "index.html";
+  const dashRedirect = () => location.href = "dash.html";
 
   const circle = document.getElementById('dotCircle');
+  const gaugeFill = document.getElementById('gaugeFill');
   
-  // Show delayed text after 1 seconds
+  // Show delayed text after 1.5 seconds
   setTimeout(() => {
     const dashInstruction = document.getElementById('dashInstruction');
     dashInstruction.classList.add('show');
   }, 1500);
 
+  function startGaugeEffect() {
+    gaugeFill.classList.remove('shrinking', 'filled');
+    gaugeFill.classList.add('filling');
+    
+    // After 250ms, switch to filled state (no transition, stays at scale(1))
+    setTimeout(() => {
+      if (pressStart !== null) { // Only if still pressing
+        gaugeFill.classList.remove('filling');
+        gaugeFill.classList.add('filled');
+      }
+    }, 250);
+  }
+
+  function stopGaugeEffect() {
+    gaugeFill.classList.remove('filling', 'filled');
+    gaugeFill.classList.add('shrinking');
+  }
+
   function handleSignal(duration){
     if (navigating) return;
     if (duration < THRESHOLD) {
-      // DOT: flash then redirect
-      navigating = true;
-      circle.classList.add('flash');
-      setTimeout(()=> back(), FLASH_MS);
+      // DOT: prompt user to hold longer
+      const dashInstruction = document.getElementById('dashInstruction');
+      
+      // Fade out
+      dashInstruction.style.opacity = '0';
+      
+      // Change text after fade out completes
+      setTimeout(() => {
+        dashInstruction.textContent = 'Hold a little longer for DASH';
+        // Fade back in
+        dashInstruction.style.opacity = '1';
+      }, 700);
+      
     } else {
-      // DASH: do nothing here
+      // DASH: keep gauge filled, redirect to dash.html
+      navigating = true;
+      // Don't call stopGaugeEffect() - keep the grey area filled
+      setTimeout(() => dashRedirect(), FLASH_MS);
     }
   }
 
@@ -92,6 +148,7 @@
   window.addEventListener("keydown", e => {
     if (e.code === "Enter" && pressStart === null) {
       pressStart = Date.now();
+      startGaugeEffect();
       e.preventDefault();
     }
   });
@@ -99,6 +156,10 @@
     if (e.code === "Enter" && pressStart !== null) {
       const duration = Date.now() - pressStart;
       pressStart = null;
+      // Only shrink gauge if it was a DOT (< 250ms)
+      if (duration < THRESHOLD) {
+        stopGaugeEffect();
+      }
       handleSignal(duration);
       e.preventDefault();
     }
@@ -106,24 +167,38 @@
 
   // Mouse (left click/hold)
   window.addEventListener("mousedown", e => {
-    if (e.button === 0 && pressStart === null) pressStart = Date.now();
+    if (e.button === 0 && pressStart === null) {
+      pressStart = Date.now();
+      startGaugeEffect();
+    }
   });
   window.addEventListener("mouseup", e => {
     if (e.button === 0 && pressStart !== null) {
       const duration = Date.now() - pressStart;
       pressStart = null;
+      // Only shrink gauge if it was a DOT (< 250ms)
+      if (duration < THRESHOLD) {
+        stopGaugeEffect();
+      }
       handleSignal(duration);
     }
   });
 
   // Touch (tap/hold)
   window.addEventListener("touchstart", () => {
-    if (pressStart === null) pressStart = Date.now();
+    if (pressStart === null) {
+      pressStart = Date.now();
+      startGaugeEffect();
+    }
   }, { passive: true });
   window.addEventListener("touchend", () => {
     if (pressStart !== null) {
       const duration = Date.now() - pressStart;
       pressStart = null;
+      // Only shrink gauge if it was a DOT (< 250ms)
+      if (duration < THRESHOLD) {
+        stopGaugeEffect();
+      }
       handleSignal(duration);
     }
   });

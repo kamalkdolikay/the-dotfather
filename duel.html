@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Duel Mode</title>
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    font-family: "EB Garamond", serif;
+  }
+  
+  .duel-container {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+  }
+  
+  /* Three sections using clip-path for angular divisions */
+  .section {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* White section (top-left area) */
+  .section-white {
+    background: #ffffff;
+    clip-path: polygon(0 0, 45% 0, 45% 50%, 20% 100%);
+  }
+  
+  /* Grey section (top-right area) */
+  .section-grey {
+    background: #888888;
+    clip-path: polygon(35% 0, 100% 0, 100% 60%, 45% 50%);
+  }
+  
+  /* Black section (bottom area) */
+  .section-black {
+    background: #000000;
+    clip-path: polygon(45% 50%, 100% 60%, 100% 100%, 20% 100%);
+  }
+  
+  /* Text styling for each section */
+  .section-text {
+    font-size: 3rem;
+    font-weight: 700;
+    text-align: center;
+    pointer-events: none;
+    user-select: none;
+  }
+  
+  .section-white .section-text {
+    color: #000000;
+  }
+  
+  .section-grey .section-text {
+    color: #ffffff;
+  }
+  
+  .section-black .section-text {
+    color: #ffffff;
+  }
+  
+  /* Hover effects for sections */
+  .section {
+    transition: all 0.3s ease;
+  }
+  
+  .section-white:hover,
+  .section-black:hover {
+    filter: brightness(1.1);
+  }
+  
+  /* Optional: Add subtle borders between sections */
+  .section-white::after,
+  .section-grey::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 2px solid rgba(0,0,0,0.1);
+    clip-path: inherit;
+    pointer-events: none;
+  }
+  
+  /* Expand animation for letters */
+  .expand {
+    animation: expandLetter 0.5s ease-out;
+  }
+  
+  /* Transform origins for each letter to expand towards viewer */
+  #letterE.expand {
+    transform-origin: center center;
+    animation: expandLetterLeft 0.5s ease-out;
+  }
+  
+  #letterM.expand {
+    transform-origin: center center;
+    animation: expandLetterTop 0.5s ease-out;
+  }
+  
+  #letterH.expand {
+    transform-origin: center center;
+    animation: expandLetterBottom 0.5s ease-out;
+  }
+  
+  @keyframes expandLetterLeft {
+    0% { transform: scale(1) translateX(0); }
+    50% { transform: scale(1.3) translateX(5px); }
+    100% { transform: scale(1) translateX(0); }
+  }
+  
+  @keyframes expandLetterTop {
+    0% { transform: scale(1) translateY(0); }
+    50% { transform: scale(1.3) translateY(-5px); }
+    100% { transform: scale(1) translateY(0); }
+  }
+  
+  @keyframes expandLetterBottom {
+    0% { transform: scale(1) translate(0, 0); }
+    50% { transform: scale(1.3) translate(8px, 5px); }
+    100% { transform: scale(1) translate(0, 0); }
+  }
+  
+  @keyframes expandLetter {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+  }
+</style>
+</head>
+<body>
+
+<div class="duel-container">
+  <!-- White Section -->
+  <div class="section section-white" id="sectionWhite">
+    <svg width="100%" height="100%" viewBox="0 0 400 300" style="position: absolute; top: 0; left: 0;">
+      <text x="25" y="120" font-family="EB Garamond, serif" font-size="72" font-weight="bold" fill="#000000" text-anchor="middle">E</text>
+      <text x="60" y="120" font-family="EB Garamond, serif" font-size="24" fill="#000000" text-anchor="start">asy</text>
+      <circle cx="25" cy="150" r="8" fill="#000000"/>
+    </svg>
+  </div>
+  
+  <!-- Grey Section -->
+  <div class="section section-grey" id="sectionGrey">
+    <svg width="100%" height="100%" viewBox="0 0 400 300" style="position: absolute; top: 0; left: 0;">
+      <text x="300" y="80" font-family="EB Garamond, serif" font-size="72" font-weight="bold" fill="#ffffff" text-anchor="middle">M</text>
+      <text x="340" y="80" font-family="EB Garamond, serif" font-size="24" fill="#ffffff" text-anchor="start">edium</text>
+      <rect x="275" y="110" width="20" height="6" fill="#ffffff"/>
+      <rect x="305" y="110" width="20" height="6" fill="#ffffff"/>
+    </svg>
+  </div>
+  
+  <!-- Black Section -->
+  <div class="section section-black" id="sectionBlack">
+    <svg width="100%" height="100%" viewBox="0 0 400 300" style="position: absolute; top: 0; left: 0;">
+      <text x="220" y="240" font-family="EB Garamond, serif" font-size="72" font-weight="bold" fill="#ffffff" text-anchor="middle">H</text>
+      <text x="260" y="240" font-family="EB Garamond, serif" font-size="24" fill="#ffffff" text-anchor="start">ard</text>
+      <circle cx="197" cy="270" r="6" fill="#ffffff"/>
+      <circle cx="212" cy="270" r="6" fill="#ffffff"/>
+      <circle cx="227" cy="270" r="6" fill="#ffffff"/>
+      <circle cx="242" cy="270" r="6" fill="#ffffff"/>
+    </svg>
+  </div>
+</div>
+
+<script>
+// Morse code detection variables
+let isPressed = false;
+let pressStartTime = 0;
+let lastInputTime = 0;
+let morseSequence = [];
+const DOT_THRESHOLD = 250; // milliseconds
+const DASH_THRESHOLD = 250; // minimum for dash
+const SILENCE_THRESHOLD = 1000; // 1 second of silence to complete sequence
+
+// Morse code patterns
+const MORSE_PATTERNS = {
+  'E': '.', // single dot
+  'M': '--', // two dashes  
+  'H': '....' // four dots
+};
+
+// Add IDs to the letters for animation
+document.addEventListener('DOMContentLoaded', function() {
+  // Add IDs to the uppercase letters
+  const easyE = document.querySelector('.section-white text[font-size="72"]');
+  const mediumM = document.querySelector('.section-grey text[font-size="72"]');
+  const hardH = document.querySelector('.section-black text[font-size="72"]');
+  
+  if (easyE) easyE.id = 'letterE';
+  if (mediumM) mediumM.id = 'letterM';
+  if (hardH) hardH.id = 'letterH';
+});
+
+// Mouse and touch event handlers
+function handlePressStart() {
+  if (!isPressed) {
+    isPressed = true;
+    pressStartTime = Date.now();
+    lastInputTime = Date.now();
+  }
+}
+
+function handlePressEnd() {
+  if (isPressed) {
+    isPressed = false;
+    const pressDuration = Date.now() - pressStartTime;
+    
+    // Determine if it's a dot or dash
+    if (pressDuration < DOT_THRESHOLD) {
+      morseSequence.push('.');
+    } else {
+      morseSequence.push('-');
+    }
+    
+    lastInputTime = Date.now();
+    console.log('Current sequence:', morseSequence.join(''));
+    
+    // Check for pattern completion after a delay
+    setTimeout(checkForCompletion, SILENCE_THRESHOLD + 1000);
+  }
+}
+
+function checkForCompletion() {
+  const timeSinceLastInput = Date.now() - lastInputTime;
+  
+  if (timeSinceLastInput >= SILENCE_THRESHOLD && morseSequence.length > 0) {
+    const sequence = morseSequence.join('');
+    console.log('Checking sequence:', sequence);
+    
+    // Check for matches
+    if (sequence === '.') {
+      expandLetter('letterE');
+      console.log('Easy mode selected!');
+    } else if (sequence === '--') {
+      expandLetter('letterM');
+      console.log('Medium mode selected!');
+    } else if (sequence === '....') {
+      expandLetter('letterH');
+      console.log('Hard mode selected!');
+    }
+    
+    // Reset sequence
+    morseSequence = [];
+  }
+}
+
+function expandLetter(letterId) {
+  const letter = document.getElementById(letterId);
+  if (letter) {
+    // Remove existing animation class
+    letter.classList.remove('expand');
+    // Force reflow
+    letter.offsetHeight;
+    // Add animation class
+    letter.classList.add('expand');
+    
+    // Remove class after animation
+    setTimeout(() => {
+      letter.classList.remove('expand');
+    }, 500);
+  }
+}
+
+// Add event listeners for mouse
+document.addEventListener('mousedown', handlePressStart);
+document.addEventListener('mouseup', handlePressEnd);
+
+// Add event listeners for touch
+document.addEventListener('touchstart', function(e) {
+  e.preventDefault();
+  handlePressStart();
+});
+
+document.addEventListener('touchend', function(e) {
+  e.preventDefault();
+  handlePressEnd();
+});
+
+// Add event listeners for keyboard (spacebar)
+document.addEventListener('keydown', function(e) {
+  if (e.code === 'Space' && !isPressed) {
+    e.preventDefault();
+    handlePressStart();
+  }
+});
+
+document.addEventListener('keyup', function(e) {
+  if (e.code === 'Space') {
+    e.preventDefault();
+    handlePressEnd();
+  }
+});
+
+// Add click handlers for each section (keeping original functionality)
+document.getElementById('sectionWhite').addEventListener('click', function() {
+  console.log('White section clicked - Easy mode');
+  expandLetter('letterE');
+});
+
+document.getElementById('sectionBlack').addEventListener('click', function() {
+  console.log('Black section clicked - Hard mode');
+  expandLetter('letterH');
+});
+
+// Prevent context menu
+document.addEventListener('contextmenu', e => e.preventDefault());
+</script>
+
+</body>
+</html>

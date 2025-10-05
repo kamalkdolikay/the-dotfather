@@ -12,12 +12,12 @@ defmodule TheDotfather.Tutorial do
         }
 
   @default_letters [
-    %{letter: "E", pattern: [:dot], image: "/images/tutorial/e.svg"},
-    %{letter: "T", pattern: [:dash], image: "/images/tutorial/t.svg"},
-    %{letter: "I", pattern: [:dot, :dot], image: "/images/tutorial/i.svg"},
-    %{letter: "M", pattern: [:dash, :dash], image: "/images/tutorial/m.svg"},
-    %{letter: "A", pattern: [:dot, :dash], image: "/images/tutorial/a.svg"},
-    %{letter: "S", pattern: [:dot, :dot, :dot], image: "/images/tutorial/s.svg"}
+    %{letter: "E", pattern: [:dot], image: "/images/letters/E.svg", word: "Egg"},
+    %{letter: "T", pattern: [:dash], image: "/images/letters/T.svg", word: "Tree"},
+    %{letter: "I", pattern: [:dot, :dot], image: "/images/letters/I.svg", word: "Insect"},
+    %{letter: "M", pattern: [:dash, :dash], image: "/images/letters/M.svg", word: "Mask"},
+    %{letter: "A", pattern: [:dot, :dash], image: "/images/letters/A.svg", word: "Avocado"},
+    %{letter: "S", pattern: [:dot, :dot, :dot], image: "/images/letters/S.svg", word: "Signal"}
   ]
 
   @spec lessons() :: [lesson()]
@@ -38,7 +38,8 @@ defmodule TheDotfather.Tutorial do
         %{
           letter: letter,
           pattern: Morse.pattern_for(letter),
-          image: "/images/tutorial/placeholder.svg"
+          image: "/images/tutorial/placeholder.svg",
+          word: nil
         }
 
       lesson ->
@@ -49,8 +50,9 @@ defmodule TheDotfather.Tutorial do
   defp normalise(%{letter: letter, pattern: pattern} = lesson) when is_binary(letter) do
     pattern = Enum.map(pattern, &normalize_symbol/1)
     image = Map.get(lesson, :image, "/images/tutorial/placeholder.svg")
+    word = Map.get(lesson, :word)
 
-    %{letter: String.upcase(letter), pattern: pattern, image: image}
+    %{letter: String.upcase(letter), pattern: pattern, image: image, word: word}
   end
 
   defp normalize_symbol(symbol) when symbol in [:dot, :dash], do: symbol

@@ -15,7 +15,7 @@ defmodule TheDotfatherWeb.TutorialLive do
      |> assign(:lessons, lessons)
      |> assign(:stage, {:intro, :dot})
      |> assign(:input, [])
-     |> assign(:prompt, "Quick press to enter Dot")
+     |> assign(:prompt, "Tap to begin with a dot")
      |> assign(:info, nil)
      |> assign(:error, nil)
      |> assign(:show_hint, false)
@@ -31,16 +31,6 @@ defmodule TheDotfatherWeb.TutorialLive do
   def handle_event("morse_input", _params, socket), do: {:noreply, socket}
 
   @impl true
-  def handle_info(:advance_from_intro, socket) do
-    {:noreply,
-     socket
-     |> assign(:info, nil)
-     |> assign(:prompt, lesson_prompt(socket.assigns.lessons, 0, :learning))
-     |> assign(:stage, {:lesson, 0, :learning})
-     |> assign(:input, [])
-     |> assign(:show_hint, false)}
-  end
-
   def handle_info(
         {:practice_timeout, index},
         %{assigns: %{stage: {:lesson, stage_index, :practice}}} = socket
@@ -64,11 +54,11 @@ defmodule TheDotfatherWeb.TutorialLive do
 
   defp handle_symbol(socket, :long_dash) do
     case socket.assigns.stage do
-      {:lesson, _index, stage} when stage in [:practice, :navigation] ->
+      {:lesson, _index, stage} when stage in [:learning, :practice, :navigation] ->
         push_navigate(socket, to: ~p"/")
 
-      {:lesson, _index, :learning} ->
-        push_navigate(socket, to: ~p"/")
+      {:intro, :hold} ->
+        advance_to_first_lesson(socket)
 
       {:intro, _} ->
         socket
@@ -82,6 +72,7 @@ defmodule TheDotfatherWeb.TutorialLive do
     case socket.assigns.stage do
       {:intro, :dot} -> handle_intro_dot(socket, symbol)
       {:intro, :dash} -> handle_intro_dash(socket, symbol)
+      {:intro, :hold} -> handle_intro_hold(socket, symbol)
       {:lesson, index, :learning} -> handle_learning(socket, index, symbol)
       {:lesson, index, :practice} -> handle_practice(socket, index, symbol)
       {:lesson, index, :navigation} -> handle_navigation(socket, index, symbol)
@@ -93,25 +84,45 @@ defmodule TheDotfatherWeb.TutorialLive do
     socket
     |> assign(:stage, {:intro, :dash})
     |> assign(:input, [])
-    |> assign(:prompt, "Long press to enter Dash")
+    |> assign(:prompt, "Press and hold a little longer for a dash")
     |> assign(:error, nil)
   end
 
   defp handle_intro_dot(socket, _symbol) do
-    flash_error(socket, "Quick press to enter Dot")
+    flash_error(socket, "Quick tap for a dot")
   end
 
   defp handle_intro_dash(socket, :dash) do
     socket
+    |> assign(:stage, {:intro, :hold})
     |> assign(:input, [])
-    |> assign(:prompt, "Long press over 3 seconds exits or goes back")
-    |> assign(:info, "Great! Preparing your first lesson...")
+    |> assign(:prompt, "Hold for 3 seconds to continue")
+    |> assign(:info, nil)
     |> assign(:error, nil)
-    |> schedule_intro_advance()
   end
 
   defp handle_intro_dash(socket, _symbol) do
-    flash_error(socket, "Long press to enter Dash")
+    flash_error(socket, "Hold a little longer for a dash")
+  end
+
+  defp handle_intro_hold(socket, _symbol) do
+    flash_error(socket, "Hold for 3 seconds to continue")
+  end
+
+  defp advance_to_first_lesson(socket) do
+    lessons = socket.assigns.lessons || []
+
+    if lessons == [] do
+      push_navigate(socket, to: ~p"/")
+    else
+      socket
+      |> assign(:stage, {:lesson, 0, :learning})
+      |> assign(:input, [])
+      |> assign(:prompt, lesson_prompt(lessons, 0, :learning))
+      |> assign(:info, nil)
+      |> assign(:show_hint, false)
+      |> assign(:error, nil)
+    end
   end
 
   defp handle_learning(socket, index, symbol) do
@@ -206,8 +217,8 @@ defmodule TheDotfatherWeb.TutorialLive do
         socket
         |> assign(:stage, {:intro, :dash})
         |> assign(:input, [])
-        |> assign(:prompt, "Long press to enter Dash")
-        |> assign(:info, "You're back at the basics. Dot heads to lessons again.")
+        |> assign(:prompt, "Press and hold a little longer for a dash")
+        |> assign(:info, "Tap for dot training. Hold to keep practicing.")
     end
   end
 
@@ -244,11 +255,6 @@ defmodule TheDotfatherWeb.TutorialLive do
 
   defp matches_prefix?(pattern, input) do
     Enum.take(pattern, length(input)) == input
-  end
-
-  defp schedule_intro_advance(socket) do
-    Process.send_after(self(), :advance_from_intro, 3_000)
-    socket
   end
 
   defp restart_practice_timer(socket, index) do

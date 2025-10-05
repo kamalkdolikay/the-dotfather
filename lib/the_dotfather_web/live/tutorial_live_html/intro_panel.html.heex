@@ -1,7 +1,140 @@
-<div class="w-full max-w-xl space-y-6">
-  <div class="flex flex-col items-center gap-6 rounded-3xl border border-slate-800/80 bg-slate-900/70 p-8 shadow-xl shadow-slate-900/60">
-    <img src={intro_image(@stage)} alt="Tutorial step" class="h-28 w-28" />
-    <p class={flash_class(@error)}>{@prompt}</p>
-    <.input_display symbols={@input} />
-  </div>
-</div>
+<%= case @stage do %>
+  <% {:intro, :dot} -> %>
+    <div
+      id="tutorial-intro-dot"
+      class="tutorial-screen tutorial-screen--dot"
+      phx-hook="TutorialIntroDot"
+    >
+      <svg class="tutorial-screen__svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+        <text x="-20" y="8" font-size="6" class="tutorial-text">Well done!</text>
+
+        <text x="-20" y="18" font-size="6" class="tutorial-text">
+          Simply tap and it becomes a DOT
+        </text>
+
+        <text
+          data-dot-message
+          x="14"
+          y="78"
+          font-size="6"
+          class="tutorial-text delayed-text"
+        >
+          Now try holding for a DASH
+        </text>
+        <circle data-dot-circle class="tutorial-circle" cx="50" cy="50" r="16" />
+        <circle
+          data-dot-gauge
+          class="tutorial-gauge tutorial-gauge--circle"
+          cx="50"
+          cy="50"
+          r="16"
+        />
+      </svg>
+    </div>
+  <% {:intro, :dash} -> %>
+    <div
+      id="tutorial-intro-dash"
+      class="tutorial-screen tutorial-screen--dash"
+      phx-hook="TutorialIntroDash"
+    >
+      <svg class="tutorial-screen__svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+        <text x="-20" y="8" font-size="6" class="tutorial-text">Excellent!</text>
+
+        <text x="-20" y="18" font-size="6" class="tutorial-text">
+          Hold a little longer and it becomes a DASH
+        </text>
+
+        <text
+          data-dash-message
+          x="14"
+          y="78"
+          font-size="6"
+          class="tutorial-text delayed-text"
+        >
+          Hold even longer for HOLD
+        </text>
+
+        <rect
+          data-dash-rect
+          class="tutorial-rect"
+          x="25"
+          y="45"
+          width="50"
+          height="15"
+        />
+        <rect
+          data-dash-gauge
+          class="tutorial-gauge tutorial-gauge--rect"
+          x="25"
+          y="45"
+          width="50"
+          height="15"
+        />
+      </svg>
+    </div>
+  <% {:intro, :hold} -> %>
+    <div
+      id="tutorial-intro-hold"
+      class="tutorial-screen tutorial-screen--hold"
+      phx-hook="TutorialIntroHold"
+    >
+      <svg class="tutorial-screen__svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+        <text x="-20" y="8" font-size="6" class="tutorial-text">
+          You are ready to learn Morse code!
+        </text>
+        <circle data-hold-dot class="tutorial-hold-element" cx="0" cy="40" r="6" />
+        <text
+          data-hold-dot-text
+          x="-7"
+          y="55"
+          font-size="6"
+          class="tutorial-hold-text"
+        >
+          DOT
+        </text>
+
+        <rect
+          data-hold-dash
+          class="tutorial-hold-element"
+          x="35"
+          y="37"
+          width="20"
+          height="5"
+        />
+        <text
+          data-hold-dash-text
+          x="45"
+          y="55"
+          font-size="6"
+          class="tutorial-hold-text"
+        >
+          DASH
+        </text>
+
+        <polygon
+          data-hold-hold
+          class="tutorial-hold-element"
+          points="80,42 105,42 105,37"
+        />
+        <text
+          data-hold-hold-text
+          x="92.5"
+          y="55"
+          font-size="6"
+          class="tutorial-hold-text"
+        >
+          HOLD
+        </text>
+
+        <text x="14" y="78" font-size="6" class="tutorial-text delayed-text">
+          Hold for 3 seconds to move on to letters
+        </text>
+      </svg>
+    </div>
+  <% _ -> %>
+    <div class="flex items-center justify-center">
+      <p class="text-sm text-slate-400">Getting ready...</p>
+    </div>
+<% end %>
+
+<p class="text-sm text-slate-400">Getting ready...</p>

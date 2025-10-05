@@ -1,15 +1,22 @@
 <Layouts.app flash={@flash} current_scope={assigns[:current_scope]}>
-  <div id="tutorial-root" class="min-h-screen bg-slate-950 text-slate-100" phx-hook="MorseInput">
-    <header class="px-6 py-8 text-center">
-      <h1 class="text-3xl font-semibold tracking-tight">Tutorial</h1>
+  <div
+    id="tutorial-root"
+    class={[
+      "tutorial-root",
+      intro_stage?(@stage) && "tutorial-root--intro",
+      !intro_stage?(@stage) && "tutorial-root--lessons"
+    ]}
+    phx-hook="MorseInput"
+  >
+    <%= if intro_stage?(@stage) do %>
+      <.intro_panel stage={@stage} prompt={@prompt} error={@error} input={@input} />
+    <% else %>
+      <header class="tutorial-header">
+        <h1 class="tutorial-title">Tutorial</h1>
+        <p class="tutorial-subtitle">Learn Morse code through guided practice.</p>
+      </header>
 
-      <p class="mt-2 text-slate-300">Learn Morse code through guided practice.</p>
-    </header>
-
-    <section class="mx-auto flex max-w-3xl flex-col items-center gap-10 px-6 pb-16">
-      <%= if intro_stage?(@stage) do %>
-        <.intro_panel stage={@stage} prompt={@prompt} error={@error} input={@input} />
-      <% else %>
+      <section class="tutorial-stage">
         <.lesson_panel
           stage={@stage}
           lesson={resolve_lesson(@lessons, @stage)}
@@ -20,7 +27,7 @@
           show_hint={@show_hint}
           final_message={@final_message}
         />
-      <% end %>
-    </section>
+      </section>
+    <% end %>
   </div>
 </Layouts.app>

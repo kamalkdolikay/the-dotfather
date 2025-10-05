@@ -35,8 +35,9 @@ defmodule TheDotfatherWeb.Layouts do
 
   def app(assigns) do
     ~H"""
-    <div id="app-root" class="relative min-h-screen bg-slate-950 text-slate-100">
-      {render_slot(@inner_block)} <.flash_group flash={@flash} />
+    <div id="app-root" class="app-root">
+      {render_slot(@inner_block)}
+      <.flash_group flash={@flash} />
     </div>
     """
   end
@@ -67,7 +68,7 @@ defmodule TheDotfatherWeb.Layouts do
         {gettext("Attempting to reconnect")}
         <.icon name="hero-arrow-path" class="ml-1 size-3 motion-safe:animate-spin" />
       </.flash>
-      
+
       <.flash
         id="server-error"
         kind={:error}

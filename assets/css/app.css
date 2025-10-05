@@ -5,6 +5,7 @@
 @source "../css";
 @source "../js";
 @source "../../lib/the_dotfather_web";
+@import url("https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap");
 
 /* A Tailwind plugin that makes "hero-#{ICON}" classes available.
    The heroicons installation itself is managed by your mix.exs */
@@ -103,3 +104,704 @@
 [data-phx-session], [data-phx-teleported-src] { display: contents }
 
 /* This file is for your main application CSS */
+body,
+html {
+  min-height: 100%;
+  margin: 0;
+  font-family: "EB Garamond", serif;
+}
+
+body {
+  overflow: hidden;
+}
+
+.app-root {
+  max-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.main-landing {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  background: #fff;
+  color: #000;
+  overflow: hidden;
+}
+
+.main-landing__frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.main-landing__svg {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 130%;
+  height: 130%;
+  transform: translate(-50%, -50%);
+}
+
+.main-landing__boundary {
+  fill: none;
+  stroke: #000;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+  stroke-linecap: square;
+  shape-rendering: crispEdges;
+}
+
+.main-landing__circle,
+.main-landing__rect {
+  pointer-events: none;
+  transition: fill 0.2s ease;
+}
+
+.main-landing__circle {
+  fill: #fff;
+}
+
+.main-landing__rect {
+  fill: #000;
+}
+
+.main-landing__circle.flash {
+  fill: #888 !important;
+}
+
+.main-landing__rect.flash {
+  fill: #666 !important;
+}
+
+.main-landing__label,
+.main-landing__hint {
+  fill: #fff;
+  font-family: "EB Garamond", serif;
+  mix-blend-mode: difference;
+}
+
+.main-landing__hint {
+  font-size: 3px;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.lesson-panel {
+  width: min(90vw, 80rem);
+  margin: 0 auto;
+  padding: clamp(1.5rem, 3vw, 2.5rem);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: clamp(1.5rem, 4vw, 3rem);
+  align-items: center;
+}
+
+.lesson-monitor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  color: #111827;
+  font-family: "EB Garamond", serif;
+}
+
+.lesson-monitor__shell {
+  width: 270px;
+  height: 210px;
+  background: #8b8b8b;
+  border-radius: 6px;
+  position: relative;
+  box-shadow: 0 0 0 3px #000 inset;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lesson-monitor__screen {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  right: 18px;
+  bottom: 18px;
+  background: #000;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #14f195;
+  font-size: 3rem;
+  letter-spacing: 0.1em;
+  text-shadow: 0 0 6px rgba(20, 241, 149, 0.75);
+  transition: opacity 0.3s ease;
+}
+
+.lesson-monitor__cpu {
+  width: 300px;
+  height: 90px;
+  background: rgba(136, 136, 136, 0.8);
+  margin-top: 8px;
+  border-radius: 4px;
+  box-shadow: 0 0 0 3px #000 inset;
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  box-sizing: border-box;
+}
+
+.lesson-monitor__vents {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lesson-monitor__vent {
+  display: block;
+  width: 70px;
+  height: 4px;
+  background: #000;
+  border-radius: 2px;
+}
+
+.lesson-monitor__drive {
+  width: 80px;
+  height: 65px;
+  background: #888;
+  border: 2px solid #000;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lesson-monitor__drive-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #d1f5e0, #8bd7b4 70%);
+  border: 2px solid #1c4532;
+}
+
+.lesson-monitor__artwork {
+  width: 220px;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lesson-monitor__artwork img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: opacity 0.4s ease;
+}
+
+.lesson-monitor__artwork-placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  background: repeating-linear-gradient(
+      45deg,
+      rgba(15, 23, 42, 0.1),
+      rgba(15, 23, 42, 0.1) 12px,
+      rgba(15, 23, 42, 0.2) 12px,
+      rgba(15, 23, 42, 0.2) 24px
+    );
+}
+
+.lesson-monitor__word {
+  margin: 0;
+  font-size: 1rem;
+  color: #2d3748;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.lesson-monitor__pattern {
+  margin: 0;
+  font-family: "Courier New", monospace;
+  font-size: 1.4rem;
+  color: #0f172a;
+  letter-spacing: 0.2em;
+}
+
+.lesson-monitor--hide-art .lesson-monitor__artwork img {
+  opacity: 0;
+}
+
+.lesson-panel__info {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  color: #111827;
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 1.5rem;
+  padding: clamp(1.5rem, 3vw, 2.5rem);
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.12);
+}
+
+.lesson-panel__prompt {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.lesson-panel__pattern {
+  margin: 0;
+  font-family: "Courier New", monospace;
+  font-size: 1.5rem;
+  color: #0f172a;
+  letter-spacing: 0.18em;
+}
+
+.lesson-panel__note {
+  margin: 0;
+  font-size: 0.95rem;
+  color: rgba(17, 24, 39, 0.7);
+}
+
+.lesson-panel__prompt-text {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.lesson-panel__final {
+  background: rgba(34, 197, 94, 0.12);
+  color: #166534;
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  text-align: center;
+  font-weight: 600;
+}
+
+.competition-root {
+  min-height: 100vh;
+  background: #fff;
+  color: #111827;
+  font-family: "EB Garamond", serif;
+}
+
+.competition-layout {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: clamp(2rem, 4vw, 3rem) clamp(1.5rem, 3vw, 2.5rem) 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.competition-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.competition-title {
+  margin: 0;
+  font-size: clamp(2.3rem, 4vw, 3rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.competition-subtitle {
+  margin: 0;
+  color: rgba(17, 24, 39, 0.7);
+  font-size: 1rem;
+}
+
+.competition-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.competition-card {
+  background: #fff;
+  border: 1px solid rgba(17, 24, 39, 0.1);
+  border-radius: 1.5rem;
+  padding: clamp(1.5rem, 3vw, 2.5rem);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.competition-card--muted {
+  padding: 1.25rem;
+  background: rgba(240, 253, 244, 0.65);
+  border-color: rgba(134, 239, 172, 0.5);
+}
+
+.competition-card--question {
+  gap: 1.25rem;
+}
+
+.competition-card--secondary {
+  background: #ffffff;
+  border-color: rgba(15, 23, 42, 0.08);
+  box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
+}
+
+.competition-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.competition-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.competition-metric {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.competition-label {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.85rem;
+  color: rgba(17, 24, 39, 0.6);
+}
+
+.competition-value {
+  margin: 0.35rem 0 0;
+  font-size: clamp(2.2rem, 3vw, 2.6rem);
+  font-weight: 600;
+  color: #166534;
+}
+
+.competition-status {
+  border: 1px solid rgba(134, 239, 172, 0.6);
+  background: rgba(240, 253, 244, 0.9);
+  color: #166534;
+  padding: 0.4rem 1.4rem;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: default;
+  transition: background 0.2s ease;
+}
+
+.competition-note {
+  margin: 0;
+  font-size: 0.95rem;
+  color: rgba(17, 24, 39, 0.65);
+}
+
+.competition-question {
+  margin: 0;
+  font-size: clamp(1.8rem, 3vw, 2.2rem);
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.competition-meta {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.85rem;
+  color: rgba(17, 24, 39, 0.5);
+}
+
+.competition-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.25rem;
+}
+
+.competition-section__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.competition-count {
+  margin: 0;
+  font-size: 1rem;
+  color: rgba(17, 24, 39, 0.6);
+}
+
+.competition-input {
+  margin-top: 0.75rem;
+  min-height: 3rem;
+  min-width: 12rem;
+  border: 1px solid rgba(17, 24, 39, 0.18);
+  border-radius: 1rem;
+  background: rgba(240, 253, 244, 0.35);
+  padding: 0.6rem 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-family: "Courier New", monospace;
+  font-size: 1.1rem;
+  color: #0f172a;
+}
+
+.competition-input span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  padding: 0.15rem 0.35rem;
+  border-radius: 6px;
+  background: rgba(15, 23, 42, 0.08);
+}
+
+.competition-timer {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.competition-timer__value {
+  margin: 0;
+  font-size: clamp(2rem, 3vw, 2.4rem);
+  font-weight: 600;
+  color: #b91c1c;
+}
+
+.competition-list {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.competition-list__empty {
+  padding: 0.85rem 1rem;
+  border: 1px dashed rgba(17, 24, 39, 0.25);
+  border-radius: 1rem;
+  color: rgba(17, 24, 39, 0.5);
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+.competition-controls__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  color: rgba(17, 24, 39, 0.75);
+  font-size: 0.95rem;
+}
+
+.competition-controls__list li::before {
+  content: "•";
+  margin-right: 0.5rem;
+  color: #166534;
+}
+
+.competition-controls {
+  gap: 1rem;
+}
+
+.competition-card--secondary#match-summary {
+  min-height: 6rem;
+  color: rgba(17, 24, 39, 0.6);
+}
+
+@media (max-width: 960px) {
+  .competition-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .competition-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .competition-timer {
+    text-align: left;
+    align-items: flex-start;
+  }
+}
+
+.tutorial-root {
+  width: 100vw;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  background: #fff;
+  color: #111827;
+}
+
+.tutorial-root--intro {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.tutorial-root--lessons {
+  overflow: auto;
+}
+
+.tutorial-header {
+  text-align: center;
+  padding: 3rem 1.5rem 1rem;
+}
+
+.tutorial-title {
+  margin: 0;
+  font-size: 2.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.tutorial-subtitle {
+  margin: 0.75rem 0 0;
+  color: #111827;
+}
+
+.tutorial-stage {
+  width: 100%;
+  max-width: 60rem;
+  padding: 0 1.5rem 4rem;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.tutorial-screen {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  font-family: "EB Garamond", serif;
+}
+
+.tutorial-screen__svg {
+  width: 100vw;
+  height: 100vh;
+  display: block;
+  color: inherit;
+}
+
+.tutorial-screen--dot {
+  background: #000;
+  color: #fff;
+}
+
+.tutorial-screen--dash {
+  background: #fff;
+  color: #000;
+}
+
+.tutorial-screen--hold {
+  background: #888;
+  color: #fff;
+}
+
+.tutorial-text {
+  fill: currentColor;
+  font-family: "EB Garamond", serif;
+  font-weight: 700;
+  text-anchor: start;
+  dominant-baseline: hanging;
+}
+
+.tutorial-text.delayed-text {
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+}
+
+.tutorial-text.delayed-text.show {
+  opacity: 1;
+}
+
+.tutorial-circle,
+.tutorial-rect,
+.tutorial-hold-element {
+  transition: transform 0.2s ease-in-out;
+}
+
+.tutorial-circle {
+  fill: #fff;
+}
+
+.tutorial-rect {
+  fill: #000;
+}
+
+.tutorial-gauge {
+  fill: #888;
+  transition: transform 0.1s ease-out;
+}
+
+.tutorial-gauge--circle {
+  transform: scale(0);
+  transform-origin: center;
+}
+
+.tutorial-gauge--rect {
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+.tutorial-gauge.is-filling {
+  transition: transform 0.25s linear;
+}
+
+.tutorial-gauge.is-filled {
+  transition: none;
+}
+
+.tutorial-gauge.is-shrinking {
+  transition: transform 0.15s ease-in;
+}
+
+.tutorial-circle.expand,
+.tutorial-rect.expand,
+.tutorial-hold-element.expand,
+.tutorial-hold-text.expand {
+  animation: expand-effect 0.4s ease-in-out;
+}
+
+.tutorial-hold-element {
+  fill: #fff;
+}
+
+.tutorial-hold-text {
+  fill: #fff;
+  font-family: "EB Garamond", serif;
+  font-weight: 700;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+@keyframes expand-effect {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}

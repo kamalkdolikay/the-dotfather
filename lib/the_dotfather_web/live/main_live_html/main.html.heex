@@ -1,20 +1,79 @@
 <Layouts.app flash={@flash} current_scope={assigns[:current_scope]}>
-  <div
-    id="main-root"
-    class="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center gap-12"
-    phx-hook="MorseInput"
-  >
-    <div class="text-center space-y-6">
-      <img src="/images/dot-dash.svg" alt="Dot and dash illustration" class="mx-auto w-40 h-40" />
-      <h1 class="text-4xl font-semibold tracking-tight">The Dotfather</h1>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap"
+    rel="stylesheet"
+  />
+  <div id="main-root" class="main-landing" phx-hook="MorseInput">
+    <div id="main-visual" class="main-landing__frame" phx-hook="MainPageVisuals">
+      <svg
+  class="main-landing__svg"
+  viewBox="0 0 100 100"
+  preserveAspectRatio="xMidYMid meet"
+>
+        <defs>
+          <clipPath id="main-clip" clipPathUnits="userSpaceOnUse">
+            <rect x="0" y="0" width="100" height="100" />
+          </clipPath>
+          <mask id="main-text-mask">
+            <rect width="100" height="100" fill="white" />
+            <use href="#main-rotor" fill="black" />
+          </mask>
+        </defs>
 
-      <p class="text-lg text-slate-300">Press Dot for the Tutorial or Dash for Competition.</p>
+        <g id="main-rotor">
+          <!-- White filled side (lower portion) -->
+          <polygon
+            points="-1000000,40  50,42  50,58  1000000,60  1000000,100  -1000000,100"
+            fill="#fff"
+          />
+          
+<!-- Black filled side (upper portion) -->
+          <polygon
+            points="-1000000,40  50,42  50,58  1000000,60  1000000,0    -1000000,0"
+            fill="#000"
+          />
+          
+<!-- Boundary line -->
+          <polyline class="main-landing__boundary" points="-1000000,40  50,42  50,58  1000000,60" />
+          
+<!-- Circle (upper-right) -->
+          <circle data-main-circle class="main-landing__circle" r="3" />
+          
+<!-- Rectangle (lower-left) -->
+          <rect data-main-rect class="main-landing__rect" width="3" height="9" />
+        </g>
+        
+<!-- Top-right title -->
+        <text
+          x="82"
+          y="32"
+          class="main-landing__label"
+          font-family="Courier New, monospace"
+          font-size="0.6"
+          font-weight="500"
+          text-anchor="end"
+          dominant-baseline="hanging"
+        >
+          DotFather
+        </text>
+        
+<!-- Bottom instruction -->
+        <text
+          data-main-hint
+          x="47"
+          y="65"
+          class="main-landing__hint"
+          font-family="Courier New, monospace"
+          font-weight="700"
+          text-anchor="end"
+          dominant-baseline="hanging"
+        >
+          Click anywhere to continue
+        </text>
+      </svg>
     </div>
-
-    <div class="rounded-3xl border border-slate-800/70 bg-slate-900/70 px-6 py-4 shadow-xl shadow-slate-900/70">
-      <p class="text-base font-medium tracking-wide uppercase text-emerald-300">{@prompt}</p>
-
-      <p class="mt-2 text-sm text-slate-400">Long press (&gt;3s) exits any screen.</p>
-    </div>
+    <p class="sr-only">Press Dot for the Tutorial or Dash for Competition.</p>
   </div>
 </Layouts.app>

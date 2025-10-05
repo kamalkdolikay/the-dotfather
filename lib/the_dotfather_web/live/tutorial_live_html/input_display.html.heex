@@ -2,8 +2,4 @@
   <%= for symbol <- @symbols do %>
     <span class={symbol_class(symbol)}>{symbol_glyph(symbol)}</span>
   <% end %>
-
-  <%= if @symbols == [] do %>
-    <span class="text-slate-600">Waiting for input...</span>
-  <% end %>
 </div>

@@ -18,6 +18,11 @@ function dispatchSymbol(symbol) {
   window.dispatchEvent(new CustomEvent("morse-input", {detail: {symbol}}))
 }
 
+function dispatchInputEvent(type, detail) {
+  window.dispatchEvent(new CustomEvent("morse-input-" + type, {detail}))
+}
+
+
 function classify(duration) {
   if (duration >= LONG_MIN) return "long_dash"
   if (duration >= DOT_MAX) return "dash"
@@ -27,13 +32,21 @@ function classify(duration) {
 function pointerDown(event) {
   if (event.isPrimary === false) return
   pointerStarts.set(event.pointerId, performance.now())
+  dispatchInputEvent("start", {source: "pointer", pointerId: event.pointerId})
 }
 
 function pointerEnd(event) {
   if (!pointerStarts.has(event.pointerId)) return
   const start = pointerStarts.get(event.pointerId)
   pointerStarts.delete(event.pointerId)
-  const symbol = classify(performance.now() - start)
+  const duration = performance.now() - start
+  const symbol = classify(duration)
+  dispatchInputEvent("end", {
+    source: "pointer",
+    pointerId: event.pointerId,
+    duration,
+    symbol
+  })
   dispatchSymbol(symbol)
 }
 
@@ -41,13 +54,21 @@ function keyDown(event) {
   if (event.repeat) return
   if (shouldIgnoreTarget(event.target)) return
   keyStarts.set(event.code, performance.now())
+  dispatchInputEvent("start", {source: "keyboard", code: event.code})
 }
 
 function keyUp(event) {
   if (!keyStarts.has(event.code)) return
   const start = keyStarts.get(event.code)
   keyStarts.delete(event.code)
-  const symbol = classify(performance.now() - start)
+  const duration = performance.now() - start
+  const symbol = classify(duration)
+  dispatchInputEvent("end", {
+    source: "keyboard",
+    code: event.code,
+    duration,
+    symbol
+  })
   dispatchSymbol(symbol)
 }
 
@@ -55,6 +76,19 @@ function shouldIgnoreTarget(target) {
   if (!target) return false
   const tag = target.tagName
   return tag === "INPUT" || tag === "TEXTAREA" || target.isContentEditable
+}
+
+
+function registerTimer(store, callback, delay) {
+  const id = window.setTimeout(callback, delay)
+  store.push(id)
+  return id
+}
+
+function clearTimers(store) {
+  while (store.length > 0) {
+    window.clearTimeout(store.pop())
+  }
 }
 
 export function initMorseInput() {
@@ -158,7 +192,349 @@ export const Hooks = {
     }
   },
 
-  Competition: {
+  MainPageVisuals: {
+    mounted() {
+      initMorseInput()
+      this.circle = this.el.querySelector('[data-main-circle]')
+      this.rect = this.el.querySelector('[data-main-rect]')
+      this.hint = this.el.querySelector('[data-main-hint]')
+      this.rotor = this.el.querySelector('#main-rotor')
+      this.defaultHint = this.hint ? this.hint.textContent.trim() : ''
+      this.timers = []
+      this.animationFrame = null
+
+      const offset = 10
+      if (this.circle) {
+        this.circle.setAttribute('cx', 47 + offset)
+        this.circle.setAttribute('cy', 60 - offset)
+      }
+      if (this.rect) {
+        const width = 3
+        const height = 28
+        const rx = 50 - offset
+        const ry = 50 + offset
+        this.rect.setAttribute('width', width)
+        this.rect.setAttribute('height', height)
+        this.rect.setAttribute('x', rx - width / 2)
+        this.rect.setAttribute('y', ry - height / 2)
+      }
+
+      if (this.rotor && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const period = 60_000
+        const animate = timestamp => {
+          if (!this.rotor) return
+          const progress = (timestamp % period) / period
+          const angle = progress * 360
+          this.rotor.style.transform = `rotate(${angle}deg)`
+          this.animationFrame = window.requestAnimationFrame(animate)
+        }
+        this.animationFrame = window.requestAnimationFrame(animate)
+      }
+
+      const flash = element => {
+        if (!element) return
+        element.classList.add('flash')
+        registerTimer(this.timers, () => element.classList.remove('flash'), 220)
+      }
+
+      const showHint = message => {
+        if (!this.hint || !message) return
+        this.hint.style.opacity = '0'
+        registerTimer(this.timers, () => {
+          if (!this.hint) return
+          this.hint.textContent = message
+          this.hint.style.opacity = '1'
+        }, 160)
+        registerTimer(this.timers, () => {
+          if (!this.hint) return
+          this.hint.style.opacity = '0'
+          registerTimer(this.timers, () => {
+            if (!this.hint) return
+            this.hint.textContent = this.defaultHint
+            this.hint.style.opacity = '1'
+          }, 160)
+        }, 2400)
+      }
+
+      this.onInput = event => {
+        const symbol = normalizeSymbol(event.detail.symbol)
+        if (symbol === 'dot') {
+          flash(this.circle)
+        } else if (symbol === 'dash') {
+          flash(this.rect)
+        } else if (symbol === 'long_dash') {
+          showHint('Long holds exit. Try a quick tap for the tutorial.')
+        }
+      }
+
+      window.addEventListener('morse-input', this.onInput)
+    },
+
+    destroyed() {
+      window.removeEventListener('morse-input', this.onInput)
+      clearTimers(this.timers)
+      if (this.animationFrame) {
+        window.cancelAnimationFrame(this.animationFrame)
+        this.animationFrame = null
+      }
+      this.rotor = null
+    }
+  },
+
+  TutorialIntroDot: {
+    mounted() {
+      initMorseInput()
+      this.circle = this.el.querySelector('[data-dot-circle]')
+      this.gauge = this.el.querySelector('[data-dot-gauge]')
+      this.message = this.el.querySelector('[data-dot-message]')
+      this.defaultMessage = this.message ? this.message.textContent.trim() : ''
+      this.timers = []
+      this.fillTimer = null
+      this.pressActive = false
+
+      if (this.message) {
+        registerTimer(this.timers, () => this.message.classList.add('show'), 1500)
+      }
+
+      const setGauge = value => {
+        if (!this.gauge) return
+        this.gauge.style.transform = `scale(${value})`
+      }
+
+      const startGauge = () => {
+        if (!this.gauge) return
+        this.gauge.classList.remove('is-shrinking', 'is-filled')
+        this.gauge.classList.add('is-filling')
+        setGauge(1)
+        if (this.fillTimer) window.clearTimeout(this.fillTimer)
+        this.fillTimer = registerTimer(this.timers, () => {
+          if (this.pressActive && this.gauge) {
+            this.gauge.classList.remove('is-filling')
+            this.gauge.classList.add('is-filled')
+          }
+        }, DOT_MAX)
+      }
+
+      const shrinkGauge = () => {
+        if (!this.gauge) return
+        this.gauge.classList.remove('is-filling', 'is-filled')
+        this.gauge.classList.add('is-shrinking')
+        setGauge(0)
+        registerTimer(this.timers, () => {
+          if (this.gauge) {
+            this.gauge.classList.remove('is-shrinking')
+          }
+        }, 220)
+      }
+
+      const pulseCircle = () => {
+        if (!this.circle) return
+        this.circle.classList.add('expand')
+        registerTimer(this.timers, () => this.circle && this.circle.classList.remove('expand'), 420)
+      }
+
+      const updateMessage = message => {
+        if (!this.message || !message) return
+        this.message.classList.remove('show')
+        registerTimer(this.timers, () => {
+          if (!this.message) return
+          this.message.textContent = message
+          this.message.classList.add('show')
+        }, 180)
+        registerTimer(this.timers, () => {
+          if (!this.message || message === this.defaultMessage) return
+          this.message.classList.remove('show')
+          registerTimer(this.timers, () => {
+            if (!this.message) return
+            this.message.textContent = this.defaultMessage
+            this.message.classList.add('show')
+          }, 180)
+        }, 2600)
+      }
+
+      this.onStart = () => {
+        this.pressActive = true
+        startGauge()
+      }
+
+      this.onEnd = event => {
+        const detail = event.detail || {}
+        const symbol = normalizeSymbol(detail.symbol)
+        this.pressActive = false
+        if (this.fillTimer) {
+          window.clearTimeout(this.fillTimer)
+          this.fillTimer = null
+        }
+
+        if (symbol === 'dot') {
+          shrinkGauge()
+          pulseCircle()
+          updateMessage('Beautiful dot! Next up, hold for a dash.')
+        } else if (symbol === 'dash') {
+          updateMessage('Hold a little longer to feel a dash.')
+        } else if (symbol === 'long_dash') {
+          updateMessage('Holding for 3 seconds exits the tutorial.')
+        }
+      }
+
+      window.addEventListener('morse-input-start', this.onStart)
+      window.addEventListener('morse-input-end', this.onEnd)
+    },
+
+    destroyed() {
+      window.removeEventListener('morse-input-start', this.onStart)
+      window.removeEventListener('morse-input-end', this.onEnd)
+      if (this.fillTimer) window.clearTimeout(this.fillTimer)
+      clearTimers(this.timers)
+    }
+  },
+
+  TutorialIntroDash: {
+    mounted() {
+      initMorseInput()
+      this.rect = this.el.querySelector('[data-dash-rect]')
+      this.gauge = this.el.querySelector('[data-dash-gauge]')
+      this.message = this.el.querySelector('[data-dash-message]')
+      this.defaultMessage = this.message ? this.message.textContent.trim() : ''
+      this.timers = []
+      this.fillTimer = null
+      this.pressActive = false
+
+      if (this.message) {
+        registerTimer(this.timers, () => this.message.classList.add('show'), 2000)
+      }
+
+      const setGauge = value => {
+        if (!this.gauge) return
+        this.gauge.style.transform = `scaleX(${value})`
+      }
+
+      const startGauge = () => {
+        if (!this.gauge) return
+        this.gauge.classList.remove('is-shrinking', 'is-filled')
+        this.gauge.classList.add('is-filling')
+        setGauge(1)
+        if (this.fillTimer) window.clearTimeout(this.fillTimer)
+        this.fillTimer = registerTimer(this.timers, () => {
+          if (this.pressActive && this.gauge) {
+            this.gauge.classList.remove('is-filling')
+            this.gauge.classList.add('is-filled')
+          }
+        }, LONG_MIN)
+      }
+
+      const shrinkGauge = () => {
+        if (!this.gauge) return
+        this.gauge.classList.remove('is-filling', 'is-filled')
+        this.gauge.classList.add('is-shrinking')
+        setGauge(0)
+        registerTimer(this.timers, () => {
+          if (this.gauge) {
+            this.gauge.classList.remove('is-shrinking')
+          }
+        }, 220)
+      }
+
+      const pulseRect = () => {
+        if (!this.rect) return
+        this.rect.classList.add('expand')
+        registerTimer(this.timers, () => this.rect && this.rect.classList.remove('expand'), 420)
+      }
+
+      const updateMessage = message => {
+        if (!this.message || !message) return
+        this.message.classList.remove('show')
+        registerTimer(this.timers, () => {
+          if (!this.message) return
+          this.message.textContent = message
+          this.message.classList.add('show')
+        }, 180)
+        registerTimer(this.timers, () => {
+          if (!this.message || message === this.defaultMessage) return
+          this.message.classList.remove('show')
+          registerTimer(this.timers, () => {
+            if (!this.message) return
+            this.message.textContent = this.defaultMessage
+            this.message.classList.add('show')
+          }, 180)
+        }, 2600)
+      }
+
+      this.onStart = () => {
+        this.pressActive = true
+        startGauge()
+      }
+
+      this.onEnd = event => {
+        const detail = event.detail || {}
+        const symbol = normalizeSymbol(detail.symbol)
+        this.pressActive = false
+        if (this.fillTimer) {
+          window.clearTimeout(this.fillTimer)
+          this.fillTimer = null
+        }
+
+        if (symbol === 'dash') {
+          shrinkGauge()
+          pulseRect()
+          updateMessage('Strong dash! Hold for 3 seconds to continue.')
+        } else if (symbol === 'long_dash') {
+          updateMessage('Excellent hold! Advancing...')
+        } else if (symbol === 'dot') {
+          shrinkGauge()
+          updateMessage('Short taps are dots. Hold a bit longer for a dash.')
+        }
+      }
+
+      window.addEventListener('morse-input-start', this.onStart)
+      window.addEventListener('morse-input-end', this.onEnd)
+    },
+
+    destroyed() {
+      window.removeEventListener('morse-input-start', this.onStart)
+      window.removeEventListener('morse-input-end', this.onEnd)
+      if (this.fillTimer) window.clearTimeout(this.fillTimer)
+      clearTimers(this.timers)
+    }
+  },
+
+  TutorialIntroHold: {
+    mounted() {
+      initMorseInput()
+      this.dotElement = this.el.querySelector('[data-hold-dot]')
+      this.dashElement = this.el.querySelector('[data-hold-dash]')
+      this.holdElement = this.el.querySelector('[data-hold-hold]')
+      this.dotText = this.el.querySelector('[data-hold-dot-text]')
+      this.dashText = this.el.querySelector('[data-hold-dash-text]')
+      this.holdText = this.el.querySelector('[data-hold-hold-text]')
+      this.timers = []
+
+      const pulse = elements => {
+        elements.filter(Boolean).forEach(element => {
+          element.classList.add('expand')
+          registerTimer(this.timers, () => element && element.classList.remove('expand'), 420)
+        })
+      }
+
+      this.onInput = event => {
+        const symbol = normalizeSymbol(event.detail.symbol)
+        if (symbol === 'dot') {
+          pulse([this.dotElement, this.dotText])
+        } else if (symbol === 'dash') {
+          pulse([this.dashElement, this.dashText])
+        } else if (symbol === 'long_dash') {
+          pulse([this.holdElement, this.holdText])
+        }
+      }
+
+      window.addEventListener('morse-input', this.onInput)
+    },
+
+    destroyed() {
+      window.removeEventListener('morse-input', this.onInput)
+      clearTimers(this.timers)
+    }
+  },  Competition: {
     mounted() {
       initMorseInput()
       this.identity = loadIdentity()
@@ -484,7 +860,7 @@ export const Hooks = {
       if (!this.scoreboardEl) return
       const entries = Object.entries(players)
       if (entries.length === 0) {
-        this.scoreboardEl.innerHTML = `<div class="rounded-2xl border border-slate-800/60 bg-slate-950/80 px-4 py-3 text-slate-500">Waiting for players¡­</div>`
+        this.scoreboardEl.innerHTML = `<div class="rounded-2xl border border-slate-800/60 bg-slate-950/80 px-4 py-3 text-slate-500">Waiting for playersï¿½ï¿½</div>`
         return
       }
 
@@ -595,6 +971,9 @@ export const Hooks = {
     }
   }
 }
+
+
+
 
 
 

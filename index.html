@@ -8,6 +8,20 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>DotFather</title>
 <style>
+  /* Custom Godfather font import */
+  @font-face {
+    font-family: 'TheGodfather';
+    src: url('./fonts/the-godfather.regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap; /* Helps with font loading */
+  }
+  
+  /* Ensure custom font is used for title */
+  .godfather-title {
+    font-family: 'TheGodfather', 'Courier New', monospace !important;
+  }
+  
   :root { --stroke: 2; --period: 60; } /* seconds per rotation */
   html,body { height:100%; margin:0; background:#fff; }
   svg {
@@ -95,15 +109,28 @@
   </g>
 
   <!-- Top-right title (after rotating group so it renders on top) -->
-  <text x="82" y="32"
-        font-family="Courier New, monospace"
-        font-size="1"
+  <!-- Dingding icon beside "The" text -->
+  <image x="80" y="29" width="6" height="8" href="../dingding.svg" opacity="0.8"/>
+  
+  <text x="79" y="32"
+        font-family="TheGodfather, Courier New, monospace"
+        font-size="4"
         font-weight="500"
         fill="#ffffff"
-        class="adaptive-text"
+        class="adaptive-text godfather-title"
+        text-anchor="end"
+        dominant-baseline="hanging">The </text>
+  
+  <text x="84.5" y="36"
+        font-family="TheGodfather, Courier New, monospace"
+        font-size="4"
+        font-weight="500"
+        fill="#ffffff"
+        class="adaptive-text godfather-title"
         text-anchor="end"
         dominant-baseline="hanging">
-DotFather  </text>
+Dotfather  </text>
+        
 
 <text x="47" y="65"
         font-family="Courier New, monospace"
@@ -119,6 +146,16 @@ Click anywhere to continue  </text>
 
 
 <script>
+  // Ensure custom font is loaded
+  document.fonts.ready.then(function() {
+    console.log('All fonts loaded');
+    // Force redraw of text elements with custom font
+    const titleElements = document.querySelectorAll('.godfather-title');
+    titleElements.forEach(el => {
+      el.style.fontFamily = "'TheGodfather', 'Courier New', monospace";
+    });
+  });
+
   const circle = document.getElementById('circle');
   const rect   = document.getElementById('rect');
 

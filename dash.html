@@ -11,6 +11,10 @@
   html,body{height:100%;margin:0;background:#fff}
   svg{width:100vw;height:100vh;display:block}
   .rect{fill:#000;}
+  .rect.expand { 
+    animation: expandEffect 0.4s ease-in-out;
+    transform-origin: 50px 52.5px; /* center of rect: x=25+width/2=50, y=45+height/2=52.5 */
+  }
  
   
   /* Congratulations message styling */
@@ -53,6 +57,17 @@
   .gauge-fill.shrinking {
     transition: transform 0.15s ease-in;
     transform: scaleX(0);
+  }
+  
+  /* Expand animation */
+  .expand {
+    animation: expandEffect 0.4s ease-in-out;
+  }
+  
+  @keyframes expandEffect {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
   }
 </style>
 </head>
@@ -125,8 +140,11 @@
       // Hold: redirect to hold.html
       navigating = true;
       setTimeout(() => holdRedirect(), FLASH_MS);
-    } else{
-      // Regular dash: prompt user to hold longer
+    } else if (duration >= 250) {
+      // Regular dash: add expand effect and prompt user to hold longer
+      rect.classList.add('expand');
+      setTimeout(() => rect.classList.remove('expand'), 400);
+      
       const longDashInstruction = document.getElementById('longDashInstruction');
       
       // Fade out

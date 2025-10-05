@@ -24,15 +24,40 @@
     dominant-baseline: hanging;
   }
   
-  /* Flash animation for DOT and DASH */
-  .flash {
-    animation: flashEffect 0.3s ease-in-out;
+  /* Expand animation for DOT, DASH, and HOLD */
+  .expand {
+    animation: expandEffect 0.4s ease-in-out;
   }
   
-  @keyframes flashEffect {
-    0% { fill: #fff; }
-    50% { fill: #000; }
-    100% { fill: #fff; }
+  /* Specific transform origins for each element */
+  #dotElement.expand {
+    transform-origin: 0px 40px; /* center of circle: cx=0, cy=40 */
+  }
+  
+  #dotText.expand {
+    transform-origin: 0px 55px; /* center of DOT text */
+  }
+  
+  #dashElement.expand {
+    transform-origin: 45px 39.5px; /* center of rect: x=35+width/2=45, y=37+height/2=39.5 */
+  }
+  
+  #dashText.expand {
+    transform-origin: 45px 55px; /* center of DASH text */
+  }
+  
+  #holdElement.expand {
+    transform-origin: 92.5px 39.5px; /* center of triangle: roughly x=92.5, y=39.5 */
+  }
+  
+  #holdText.expand {
+    transform-origin: 92.5px 55px; /* center of HOLD text */
+  }
+  
+  @keyframes expandEffect {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
   } 
 </style>
 </head>
@@ -50,15 +75,15 @@
   
   <!-- DOT representation -->
   <circle id="dotElement" cx="0" cy="40" r="6" fill="#fff"/>
-  <text x="-6" y="55" font-size="6" class="congrats-text">DOT</text>
+  <text id="dotText" x="-7" y="55" font-size="6" class="congrats-text" text-anchor="middle" dominant-baseline="central">DOT</text>
   
   <!-- DASH representation -->
   <rect id="dashElement" x="35" y="37" width="20" height="5" fill="#fff"/>
-  <text x="37" y="55" font-size="6" class="congrats-text">DASH</text>
+  <text id="dashText" x="37" y="55" font-size="6" class="congrats-text" text-anchor="middle" dominant-baseline="central">DASH</text>
   
   <!-- HOLD representation -->
   <polygon id="holdElement" points="80,42 105,42 105,37" fill="#fff"/>
-  <text x="85" y="55" font-size="6" class="congrats-text">HOLD</text>
+  <text id="holdText" x="85" y="55" font-size="6" class="congrats-text" text-anchor="middle" dominant-baseline="central">HOLD</text>
   
   <text x="14" y="78" 
         font-size="6" 
@@ -78,16 +103,21 @@
   let pressStartTime = 0;
   let navigating = false;
   
-  // Get references to SVG elements
+  // Get references to SVG elements (both logos and text)
   const dotElement = document.getElementById('dotElement');
   const dashElement = document.getElementById('dashElement');
   const holdElement = document.getElementById('holdElement');
+  const dotText = document.getElementById('dotText');
+  const dashText = document.getElementById('dashText');
+  const holdText = document.getElementById('holdText');
   
-  function flashElement(element) {
-    element.classList.add('flash');
+  function expandElements(logoElement, textElement) {
+    logoElement.classList.add('expand');
+    textElement.classList.add('expand');
     setTimeout(() => {
-      element.classList.remove('flash');
-    }, 300);
+      logoElement.classList.remove('expand');
+      textElement.classList.remove('expand');
+    }, 400);
   }
   
   function handlePress() {
@@ -102,11 +132,11 @@
     pressStartTime = 0;
     
     if (duration < DOT_THRESHOLD) {
-      // DOT detected - flash the circle
-      flashElement(dotElement);
+      // DOT detected - expand the circle and text
+      expandElements(dotElement, dotText);
     } else if (duration < DASH_THRESHOLD) {
-      // DASH detected - flash the rectangle
-      flashElement(dashElement);
+      // DASH detected - expand the rectangle and text
+      expandElements(dashElement, dashText);
     } else {
       // HOLD detected - redirect to e.html
       navigating = true;

@@ -1,6 +1,9 @@
 <!doctype html>
 <html lang="en">
 <head>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Duel</title>
@@ -12,10 +15,31 @@
   svg { width:100vw; height:100vh; display:block; }
   .circle { fill:#fff; transition: fill 0.15s; }  /* white circle */
   .circle.flash { fill:#888 !important; }         /* grey flash */
+  
+  /* Congratulations message styling */
+  .congrats-text {
+    fill: #fff;
+    font-family: "EB Garamond", serif;
+    font-weight: 700;
+    text-anchor: start;
+    dominant-baseline: hanging;
+  }
 </style>
 </head>
 <body>
 <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+  <!-- Congratulations message in top-left corner -->
+  <text x="-10" y="8" 
+        font-size="4" 
+        class="congrats-text">
+    Well done!
+  </text>
+  <text x="5" y="13" 
+        font-size="4" 
+        class="congrats-text">
+    You've learned to input a DOT
+  </text>
+  
   <!-- centered circle -->
   <circle id="dotCircle" class="circle" cx="50" cy="50" r="20"/>
 </svg>

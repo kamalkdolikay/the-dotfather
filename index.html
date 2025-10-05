@@ -1,6 +1,9 @@
 <!doctype html>
 <html lang="en">
 <head>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Duel Dot Dash</title>
@@ -40,8 +43,15 @@
   
   /* Auto-inverting text based on background */
   .adaptive-text {
+    font-family: "EB Garamond", serif;
     fill: #fff;
     mix-blend-mode: difference;
+  }
+  
+  /* Small text size class */
+  .small-text {
+    font-size: 3px !important;
+    transition: opacity 0.3s ease-in-out;
   }
 
    /* Hint text, subtle in bottom-right */
@@ -103,14 +113,22 @@
   <!-- Top-right title (after rotating group so it renders on top) -->
   <text x="82" y="32"
         font-family="Courier New, monospace"
-        font-size="4"
-        font-weight="700"
+        font-size="1"
+        font-weight="500"
         fill="#ffffff"
         class="adaptive-text"
         text-anchor="end"
         dominant-baseline="hanging">
-    DotFather
-  </text>
+DotFather  </text>
+
+<text x="47" y="65"
+        font-family="Courier New, monospace"
+        font-weight="700"
+        fill="#ffffff"
+        class="adaptive-text small-text"
+        text-anchor="end"
+        dominant-baseline="hanging">
+Click anywhere to continue  </text>
 
 </svg>
 
@@ -178,26 +196,56 @@
     }
   }
 
-  // ------- Input -> DOT/DASH -> Redirect -------
+  // ------- Input -> DOT (short press only) -> Redirect -------
   let pressStart = null;
   let navigating = false; // prevent double fires
+  let feedbackTimeouts = []; // track active timeouts
 
-  const THRESHOLD = 250;           // < 250ms = dot, >= 250ms = dash
-  const DOT_URL   = 'duel.html';
-  const DASH_URL  = 'learn.html';
+  const THRESHOLD = 250;           // < 250ms = dot, >= 250ms = ignored
+  const DOT_URL   = 'dot.html';
+
+  function clearFeedbackTimeouts() {
+    feedbackTimeouts.forEach(timeout => clearTimeout(timeout));
+    feedbackTimeouts = [];
+  }
 
   function handleSignal(duration){
     if (navigating) return;
     if (duration < THRESHOLD) {
+      // Short press - redirect to dot.html
       circle.classList.add('flash');
       setTimeout(()=>circle.classList.remove('flash'), 200);
       navigating = true;
       setTimeout(()=>location.href = DOT_URL, 500); // tiny delay for feedback
     } else {
-      rect.classList.add('flash');
-      setTimeout(()=>rect.classList.remove('flash'), Math.min(duration, 400));
-      navigating = true;
-      setTimeout(()=>location.href = DASH_URL, 500);
+      // Long press - prompt user to click instead of hold
+      const instructionText = document.querySelector('.small-text');
+      const originalText = 'Click anywhere to continue'; // fixed original text
+      
+      // Clear any existing feedback timeouts
+      clearFeedbackTimeouts();
+      
+      // Fade out
+      instructionText.style.opacity = '0';
+      
+      // Change text after fade out completes
+      const timeout1 = setTimeout(() => {
+        instructionText.textContent = 'Quick tap, don\'t hold!';
+        // Fade back in
+        instructionText.style.opacity = '1';
+      }, 300);
+      feedbackTimeouts.push(timeout1);
+      
+      // Reset text after 2 seconds with fade transition
+      const timeout2 = setTimeout(() => {
+        instructionText.style.opacity = '0';
+        const timeout3 = setTimeout(() => {
+          instructionText.textContent = originalText;
+          instructionText.style.opacity = '1';
+        }, 300);
+        feedbackTimeouts.push(timeout3);
+      }, 2000);
+      feedbackTimeouts.push(timeout2);
     }
   }
 
@@ -210,29 +258,37 @@
   });
   window.addEventListener('keyup', e => {
     if (e.code === 'Enter' && pressStart !== null) {
-      const duration = Date.now() - pressStart; pressStart = null;
-      handleSignal(duration); e.preventDefault();
+      const duration = Date.now() - pressStart; 
+      pressStart = null;
+      handleSignal(duration); 
+      e.preventDefault();
     }
   });
 
-  // Mouse (left)
+  // Mouse (left button)
   window.addEventListener('mousedown', e => {
-    if (e.button === 0 && pressStart === null) pressStart = Date.now();
+    if (e.button === 0 && pressStart === null) {
+      pressStart = Date.now();
+    }
   });
   window.addEventListener('mouseup', e => {
     if (e.button === 0 && pressStart !== null) {
-      const duration = Date.now() - pressStart; pressStart = null;
+      const duration = Date.now() - pressStart; 
+      pressStart = null;
       handleSignal(duration);
     }
   });
 
-  // Touch (mobile) — use passive:false so we can prevent scroll if needed
+  // Touch (mobile)
   window.addEventListener('touchstart', e => {
-    if (pressStart === null) pressStart = Date.now();
+    if (pressStart === null) {
+      pressStart = Date.now();
+    }
   }, {passive:true});
   window.addEventListener('touchend', e => {
     if (pressStart !== null) {
-      const duration = Date.now() - pressStart; pressStart = null;
+      const duration = Date.now() - pressStart; 
+      pressStart = null;
       handleSignal(duration);
     }
   });

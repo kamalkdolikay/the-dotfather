@@ -89,28 +89,28 @@
   <g id="rotor">
     <!-- White filled side (lower portion) -->
     <polygon class="white-filled"
-      points="-1000000,40  50,42  50,58  1000000,60
+      points="-1000000,35  50,38  50,62  1000000,65
               1000000,100  -1000000,100" />
 
     <!-- Black filled side (upper portion) -->
     <polygon class="filled"
-      points="-1000000,40  50,42  50,58  1000000,60
+      points="-1000000,35  50,38  50,62  1000000,65
               1000000,0    -1000000,0" />
 
     <!-- Boundary line -->
     <polyline class="boundary"
-      points="-1000000,40  50,42  50,58  1000000,60" />
+      points="-1000000,35  50,38  50,62  1000000,65" />
 
     <!-- White circle (on diagonal axis, upper-right) -->
-    <circle id="circle" class="circle" r="3"/>
+    <circle id="circle" class="circle" r="5"/>
 
     <!-- Black rectangle (on diagonal axis, lower-left, long side parallel to vertical edge) -->
-    <rect id="rect" class="rect" width="3" height="9"/>
+    <rect id="rect" class="rect" width="4" height="13"/>
   </g>
 
   <!-- Top-right title (after rotating group so it renders on top) -->
   <!-- Dingding icon beside "The" text -->
-  <image x="80" y="29" width="6" height="8" href="../dingding.svg" opacity="0.8"/>
+  <image x="80" y="29.5" width="6" height="8" href="./dingding.svg" opacity="0.8"/>
   
   <text x="79" y="32"
         font-family="TheGodfather, Courier New, monospace"
@@ -162,11 +162,11 @@ Click anywhere to continue  </text>
   const d = 10; // offset from center along diagonal
 
   // Circle on axis: top-right
-  circle.setAttribute('cx', 47 + d);
+  circle.setAttribute('cx', 50 + d);
   circle.setAttribute('cy', 60 - d);
 
   // Rectangle on axis: bottom-left
-  const rw = -3, rh = 28; // vertical long side
+  const rw = 0, rh = 32; // vertical long side
   const rx = 50 - d, ry = 50 + d;
   rect.setAttribute('x', rx - rw/2);
   rect.setAttribute('y', ry - rh/2);

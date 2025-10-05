@@ -22,6 +22,17 @@
     font-weight: 700;
     text-anchor: start;
     dominant-baseline: hanging;
+  }
+  
+  /* Flash animation for DOT and DASH */
+  .flash {
+    animation: flashEffect 0.3s ease-in-out;
+  }
+  
+  @keyframes flashEffect {
+    0% { fill: #fff; }
+    50% { fill: #000; }
+    100% { fill: #fff; }
   } 
 </style>
 </head>
@@ -38,15 +49,15 @@
 
   
   <!-- DOT representation -->
-  <circle cx="0" cy="40" r="6" fill="#fff"/>
+  <circle id="dotElement" cx="0" cy="40" r="6" fill="#fff"/>
   <text x="-6" y="55" font-size="6" class="congrats-text">DOT</text>
   
   <!-- DASH representation -->
-  <rect x="35" y="37" width="20" height="5" fill="#fff"/>
+  <rect id="dashElement" x="35" y="37" width="20" height="5" fill="#fff"/>
   <text x="37" y="55" font-size="6" class="congrats-text">DASH</text>
   
   <!-- HOLD representation -->
-  <polygon points="80,42 105,42 105,37" fill="#fff"/>
+  <polygon id="holdElement" points="80,42 105,42 105,37" fill="#fff"/>
   <text x="85" y="55" font-size="6" class="congrats-text">HOLD</text>
   
   <text x="14" y="78" 
@@ -59,6 +70,58 @@
 </svg>
 
 <script>
+  // Timing thresholds
+  const DOT_THRESHOLD = 250;    // < 250ms = DOT
+  const DASH_THRESHOLD = 1000;  // 250ms-1000ms = DASH
+                                // >= 1000ms = HOLD
+  
+  let pressStartTime = 0;
+  let navigating = false;
+  
+  // Get references to SVG elements
+  const dotElement = document.getElementById('dotElement');
+  const dashElement = document.getElementById('dashElement');
+  const holdElement = document.getElementById('holdElement');
+  
+  function flashElement(element) {
+    element.classList.add('flash');
+    setTimeout(() => {
+      element.classList.remove('flash');
+    }, 300);
+  }
+  
+  function handlePress() {
+    if (navigating) return;
+    pressStartTime = Date.now();
+  }
+  
+  function handleRelease() {
+    if (navigating || pressStartTime === 0) return;
+    
+    const duration = Date.now() - pressStartTime;
+    pressStartTime = 0;
+    
+    if (duration < DOT_THRESHOLD) {
+      // DOT detected - flash the circle
+      flashElement(dotElement);
+    } else if (duration < DASH_THRESHOLD) {
+      // DASH detected - flash the rectangle
+      flashElement(dashElement);
+    } else {
+      // HOLD detected - redirect to e.html
+      navigating = true;
+      location.href = "e.html";
+    }
+  }
+  
+  // Add event listeners for mouse and touch
+  document.addEventListener('mousedown', handlePress);
+  document.addEventListener('mouseup', handleRelease);
+  document.addEventListener('touchstart', handlePress);
+  document.addEventListener('touchend', handleRelease);
+  
+  // Prevent context menu on long press
+  document.addEventListener('contextmenu', (e) => e.preventDefault());
 </script>
 </body>
 </html>

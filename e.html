@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Morse Code Learning</title>
+<style>
+  html,body {
+    height:100%; margin:0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  
+  svg { width:100vw; height:100vh; display:block; }
+  
+  /* Text styling */
+  .main-text {
+    fill: #fff;
+    font-family: "EB Garamond", serif;
+    font-weight: 700;
+    text-anchor: start;
+    dominant-baseline: hanging;
+  }
+  
+  .instruction-text {
+    fill: #fff;
+    font-family: "EB Garamond", serif;
+    font-weight: 400;
+    text-anchor: start;
+    dominant-baseline: hanging;
+    opacity: 0.9;
+  }
+</style>
+</head>
+<body>
+<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+  
+  <!-- Main heading -->
+  <text x="10" y="15"  
+        font-size="8" 
+        class="main-text">
+    Welcome to Morse Code Learning!
+  </text>
+  
+  <!-- Instruction text -->
+  <text x="10" y="30"  
+        font-size="4" 
+        class="instruction-text">
+    You've mastered the basics: DOT, DASH, and HOLD
+  </text>
+  
+  <text x="10" y="40"  
+        font-size="4" 
+        class="instruction-text">
+    Now you're ready to learn real Morse code characters
+  </text>
+  
+  <!-- Placeholder for future content -->
+  <text x="10" y="55"  
+        font-size="3" 
+        class="instruction-text">
+    Coming soon: Interactive Morse code character learning
+  </text>
+  
+  <!-- Navigation hint -->
+  <text x="10" y="75"  
+        font-size="3" 
+        class="instruction-text" 
+        style="opacity: 0.7;">
+    Click anywhere to return to the summary
+  </text>
+</svg>
+
+<script>
+  // Simple navigation back to hold.html
+  let navigating = false;
+  
+  function returnToSummary() {
+    if (navigating) return;
+    navigating = true;
+    location.href = "hold.html";
+  }
+  
+  // Click/tap to return
+  document.addEventListener('click', returnToSummary);
+  document.addEventListener('touchend', returnToSummary);
+  
+  // Keyboard navigation
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Enter' || e.code === 'Space' || e.code === 'Escape') {
+      returnToSummary();
+    }
+  });
+</script>
+</body>
+</html>

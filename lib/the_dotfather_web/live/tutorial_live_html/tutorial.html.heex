@@ -1,0 +1,26 @@
+<Layouts.app flash={@flash} current_scope={assigns[:current_scope]}>
+  <div id="tutorial-root" class="min-h-screen bg-slate-950 text-slate-100" phx-hook="MorseInput">
+    <header class="px-6 py-8 text-center">
+      <h1 class="text-3xl font-semibold tracking-tight">Tutorial</h1>
+
+      <p class="mt-2 text-slate-300">Learn Morse code through guided practice.</p>
+    </header>
+
+    <section class="mx-auto flex max-w-3xl flex-col items-center gap-10 px-6 pb-16">
+      <%= if intro_stage?(@stage) do %>
+        <.intro_panel stage={@stage} prompt={@prompt} error={@error} input={@input} />
+      <% else %>
+        <.lesson_panel
+          stage={@stage}
+          lesson={resolve_lesson(@lessons, @stage)}
+          prompt={@prompt}
+          info={@info}
+          error={@error}
+          input={@input}
+          show_hint={@show_hint}
+          final_message={@final_message}
+        />
+      <% end %>
+    </section>
+  </div>
+</Layouts.app>

@@ -10,7 +10,7 @@ defmodule TheDotfatherWeb.GameChannel do
   def join("game:" <> match_id, _payload, socket) do
     user_id = socket.assigns.player.user_id
 
-    case GameServer.join(match_id, user_id) do
+    case safe_join(match_id, user_id) do
       {:ok, snapshot} ->
         {:ok, snapshot, assign(socket, :match_id, match_id)}
 
@@ -34,5 +34,14 @@ defmodule TheDotfatherWeb.GameChannel do
   def handle_in("leave", _payload, socket) do
     GameServer.leave(socket.assigns.match_id, socket.assigns.player.user_id)
     {:noreply, socket}
+  end
+
+  defp safe_join(match_id, user_id) do
+    try do
+      GameServer.join(match_id, user_id)
+    catch
+      :exit, {:noproc, _} -> {:error, :not_found}
+      :exit, {:timeout, _} -> {:error, :timeout}
+    end
   end
 end

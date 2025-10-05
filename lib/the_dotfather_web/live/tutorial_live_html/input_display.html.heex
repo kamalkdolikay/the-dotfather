@@ -1,0 +1,9 @@
+<div class="flex min-h-[3rem] w-full min-w-[16rem] flex-wrap items-center justify-center gap-2 rounded-2xl border border-slate-800/70 bg-slate-900/90 px-4 py-3 font-mono text-xl">
+  <%= for symbol <- @symbols do %>
+    <span class={symbol_class(symbol)}>{symbol_glyph(symbol)}</span>
+  <% end %>
+
+  <%= if @symbols == [] do %>
+    <span class="text-slate-600">Waiting for input...</span>
+  <% end %>
+</div>

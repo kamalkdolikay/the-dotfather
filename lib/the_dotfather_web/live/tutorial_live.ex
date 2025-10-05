@@ -1,7 +1,8 @@
 defmodule TheDotfatherWeb.TutorialLive do
   use TheDotfatherWeb, :live_view
 
-  alias TheDotfather.{Morse, Tutorial}
+  alias TheDotfather.Tutorial
+  alias TheDotfatherWeb.TutorialLiveHTML
 
   @practice_timeout 4_000
 
@@ -57,134 +58,7 @@ defmodule TheDotfatherWeb.TutorialLive do
   ## Rendering -----------------------------------------------------------------
 
   @impl true
-  def render(assigns) do
-    ~H"""
-    <div id="tutorial-root" class="min-h-screen bg-slate-950 text-slate-100" phx-hook="MorseInput">
-      <header class="px-6 py-8 text-center">
-        <h1 class="text-3xl font-semibold tracking-tight">Tutorial</h1>
-
-        <p class="mt-2 text-slate-300">Learn Morse code through guided practice.</p>
-      </header>
-
-      <section class="mx-auto flex max-w-3xl flex-col items-center gap-10 px-6 pb-16">
-        <%= if intro_stage?(@stage) do %>
-          <.intro_panel stage={@stage} prompt={@prompt} error={@error} input={@input} />
-        <% else %>
-          <.lesson_panel
-            stage={@stage}
-            lessons={@lessons}
-            prompt={@prompt}
-            info={@info}
-            error={@error}
-            input={@input}
-            show_hint={@show_hint}
-            final_message={@final_message}
-          />
-        <% end %>
-      </section>
-    </div>
-    """
-  end
-
-  attr :stage, :any
-  attr :prompt, :string
-  attr :error, :any
-  attr :input, :list
-
-  defp intro_panel(assigns) do
-    assigns = assign(assigns, :image, intro_image(assigns.stage))
-
-    ~H"""
-    <div class="w-full max-w-xl space-y-6">
-      <div class="flex flex-col items-center gap-6 rounded-3xl border border-slate-800/80 bg-slate-900/70 p-8 shadow-xl shadow-slate-900/60">
-        <img src={@image} alt="Tutorial step" class="h-28 w-28" />
-        <p class={flash_class(@error)}>{@prompt}</p>
-        <.input_display symbols={@input} />
-      </div>
-    </div>
-    """
-  end
-
-  attr :stage, :any
-  attr :lessons, :list
-  attr :prompt, :string
-  attr :info, :any
-  attr :error, :any
-  attr :input, :list
-  attr :show_hint, :boolean, default: false
-  attr :final_message, :any
-
-  defp lesson_panel(assigns) do
-    assigns = assign(assigns, lesson: current_lesson(assigns.lessons, assigns.stage))
-
-    ~H"""
-    <div class="w-full space-y-8">
-      <div class="grid gap-6 rounded-3xl border border-slate-800/80 bg-slate-900/70 p-8 shadow-xl shadow-slate-900/60 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <div class="space-y-4">
-          <h2 class="text-4xl font-semibold tracking-tight text-emerald-300">{@lesson.letter}</h2>
-
-          <%= if lesson_learning?(@stage) do %>
-            <p class="font-mono text-xl text-emerald-200">
-              {Morse.pattern_to_string([@lesson.pattern])}
-            </p>
-          <% end %>
-
-          <div class="mt-6 flex items-center justify-center">
-            <%= if lesson_learning?(@stage) or @show_hint do %>
-              <img
-                src={@lesson.image}
-                alt={"Morse hint for #{@lesson.letter}"}
-                class="h-40 w-40 rounded-3xl border border-emerald-400/30 bg-slate-950 object-contain p-4"
-              />
-            <% else %>
-              <div class="h-40 w-40 rounded-3xl border border-slate-800/70 bg-slate-950" />
-            <% end %>
-          </div>
-        </div>
-
-        <div class="flex flex-col justify-center gap-6">
-          <p class={flash_class(@error)}>{@prompt}</p>
-
-          <%= if @info do %>
-            <p class="text-sm text-slate-400">{@info}</p>
-          <% end %>
-          <.input_display symbols={@input} />
-        </div>
-      </div>
-
-      <%= if @final_message do %>
-        <div class="rounded-3xl border border-emerald-400/40 bg-emerald-500/10 px-6 py-4 text-center text-emerald-200">
-          {@final_message}
-        </div>
-      <% end %>
-    </div>
-    """
-  end
-
-  attr :symbols, :list
-
-  defp input_display(assigns) do
-    ~H"""
-    <div class="flex min-h-[3rem] w-full min-w-[16rem] flex-wrap items-center justify-center gap-2 rounded-2xl border border-slate-800/70 bg-slate-900/90 px-4 py-3 font-mono text-xl">
-      <%= for symbol <- assigns.symbols do %>
-        <span class={symbol_class(symbol)}>{symbol_glyph(symbol)}</span>
-      <% end %>
-
-      <%= if assigns.symbols == [] do %>
-        <span class="text-slate-600">Waiting for input...</span>
-      <% end %>
-    </div>
-    """
-  end
-
-  defp symbol_glyph(:dot), do: "?"
-  defp symbol_glyph(:dash), do: "-"
-
-  defp symbol_class(:dot), do: "text-emerald-300"
-  defp symbol_class(:dash), do: "text-cyan-300"
-
-  defp flash_class(nil), do: "text-lg text-slate-200"
-  defp flash_class(:error), do: "text-lg font-semibold text-rose-300 animate-pulse"
+  def render(assigns), do: TutorialLiveHTML.tutorial(assigns)
 
   ## Stage handling -------------------------------------------------------------
 
@@ -364,9 +238,6 @@ defmodule TheDotfatherWeb.TutorialLive do
     end
   end
 
-  defp intro_image({:intro, :dot}), do: "/images/dot.svg"
-  defp intro_image({:intro, :dash}), do: "/images/dash.svg"
-
   defp current_lesson(lessons, {:lesson, index, _stage}) do
     Enum.at(lessons, index)
   end
@@ -396,12 +267,6 @@ defmodule TheDotfatherWeb.TutorialLive do
     Process.cancel_timer(ref)
     assign(socket, :practice_timer_ref, nil)
   end
-
-  defp intro_stage?({:intro, _}), do: true
-  defp intro_stage?(_), do: false
-
-  defp lesson_learning?({:lesson, _index, :learning}), do: true
-  defp lesson_learning?(_), do: false
 
   defp maybe_mark_complete(socket, index) do
     if index + 1 == length(socket.assigns.lessons) do

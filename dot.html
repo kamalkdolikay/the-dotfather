@@ -24,22 +24,39 @@
     text-anchor: start;
     dominant-baseline: hanging;
   }
+  
+  /* Delayed text that appears after 2 seconds */
+  .delayed-text {
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+  }
+  
+  .delayed-text.show {
+    opacity: 1;
+  }
 </style>
 </head>
 <body>
 <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
   <!-- Congratulations message in top-left corner -->
-  <text x="-10" y="8" 
-        font-size="4" 
+  <text x="-20" y="8" 
+        font-size="6" 
         class="congrats-text">
     Well done!
   </text>
-  <text x="5" y="13" 
-        font-size="4" 
+  <text x="-20" y="18" 
+        font-size="6" 
         class="congrats-text">
     You've learned to input a DOT
   </text>
   
+  <text x="15" y="78" 
+        font-size="6" 
+        class="congrats-text delayed-text"
+        id="dashInstruction">
+    Now try holding for a DASH
+  </text>
+
   <!-- centered circle -->
   <circle id="dotCircle" class="circle" cx="50" cy="50" r="20"/>
 </svg>
@@ -52,6 +69,12 @@
   const back = () => location.href = "index.html";
 
   const circle = document.getElementById('dotCircle');
+  
+  // Show delayed text after 1 seconds
+  setTimeout(() => {
+    const dashInstruction = document.getElementById('dashInstruction');
+    dashInstruction.classList.add('show');
+  }, 1500);
 
   function handleSignal(duration){
     if (navigating) return;

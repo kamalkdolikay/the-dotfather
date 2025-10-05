@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="140" height="360" viewBox="0 0 140 360" role="img" aria-labelledby="titleDesc">
+  <title id="titleDesc">Simple stoplight with red, yellow, and green lights</title>
+
+  <!-- housing -->
+  <rect x="10" y="10" width="120" height="340" rx="20" ry="20" fill="#2b2b2b" stroke="#111" stroke-width="2"/>
+
+  <!-- inner panel -->
+  <rect x="26" y="40" width="88" height="280" rx="14" ry="14" fill="#111" opacity="0.85"/>
+
+  <!-- red light -->
+  <g transform="translate(70,110)">
+    <circle class="dot-1" cx="0" cy="0" r="34" fill="#b30000" stroke="#330000" stroke-width="3"/>
+    <ellipse class="dot-1" cx="-10" cy="-10" rx="10" ry="6" fill="rgba(255,255,255,0.35)"/>
+  </g>
+
+  <!-- yellow light -->
+  <g transform="translate(70,190)">
+    <circle class="dot-2" cx="0" cy="0" r="34" fill="#e6b800" stroke="#665000" stroke-width="3"/>
+    <ellipse class="dot-2" cx="-10" cy="-10" rx="10" ry="6" fill="rgba(255,255,255,0.35)"/>
+  </g>
+
+  <!-- green light -->
+  <g transform="translate(70,270)">
+    <circle class="dot-3" cx="0" cy="0" r="34" fill="#008000" stroke="#003300" stroke-width="3"/>
+    <ellipse class="dot-3" cx="-10" cy="-10" rx="10" ry="6" fill="rgba(255,255,255,0.35)"/>
+  </g>
+</svg>

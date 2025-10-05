@@ -26,6 +26,7 @@ import {hooks as colocatedHooks} from "phoenix-colocated/the_dotfather"
 import topbar from "../vendor/topbar"
 import {Hooks as customHooks, initMorseInput} from "./morse_input"
 
+window.colocatedHooks = window.colocatedHooks || {};
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 initMorseInput()
 const hooks = {...colocatedHooks, ...customHooks}

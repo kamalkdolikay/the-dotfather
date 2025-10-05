@@ -20,7 +20,7 @@ config :the_dotfather, TheDotfatherWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
   http: [ip: {127, 0, 0, 1}, port: String.to_integer(System.get_env("PORT") || "4000")],
-  check_origin: false,
+  check_origin: ["http://localhost:4000", "http://127.0.0.1:4000"],
   code_reloader: true,
   debug_errors: true,
   secret_key_base: "Pd2lns+/ngMUERHaQnrrAa990nEGHy8C9DV73OfYvmr83LiKNFk0tvyuuc8Pi7oq",
